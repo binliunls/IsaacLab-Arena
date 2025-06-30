@@ -1,15 +1,10 @@
-
-
-
-
-from typing import Dict, Any
 from abc import ABC
+from typing import Any, Dict
 
-from isaac_arena.scene.scene import SceneBase, PickAndPlaceScene
+from isaac_arena.scene.scene import PickAndPlaceScene, SceneBase
 
 
 class TaskBase(ABC):
-
     def __init__(self, scene: SceneBase):
         self.scene = scene
 
@@ -18,5 +13,3 @@ class TaskBase(ABC):
 
     def get_prompt(self) -> str:
         pass
-
-

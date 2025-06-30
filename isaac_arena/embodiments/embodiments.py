@@ -1,7 +1,5 @@
-
-
 from abc import ABC
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class EmbodimentBase(ABC):
@@ -13,8 +11,3 @@ class EmbodimentBase(ABC):
 
     def get_observation_cfg(self) -> Dict[str, Any]:
         pass
-    
-    
-
-    
-

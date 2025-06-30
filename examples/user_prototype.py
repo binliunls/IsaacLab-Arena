@@ -1,21 +1,19 @@
-
-from typing import Dict, Any
+from typing import Any, Dict
 
 import torch
 
 import isaac_arena
 
 
-
 # Define the policy under test
 class MyStupidPolicy(isaac_arena.policies.Policy):
-
     def __init__(self, params: Dict[str, Any]):
         self.params = params
         super().__init__()
 
     def step(self, observation: Dict[str, Any]) -> torch.Tensor:
         return isaac_arena.Action.random()
+
 
 my_stupid_policy = MyStupidPolicy(params={})
 
@@ -43,4 +41,4 @@ runner = isaac_arena.EvaluationRunner(
 )
 report = runner.run(my_stupid_policy, repeats_per_task=10)
 
-print(f'Success rate: {report.success_rate}')
+print(f"Success rate: {report.success_rate}")

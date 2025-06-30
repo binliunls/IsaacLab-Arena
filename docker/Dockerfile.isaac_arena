@@ -1,0 +1,6 @@
+ARG BASE_IMAGE=Isaaclab docker image
+
+FROM ${BASE_IMAGE}$
+
+RUN pip install isaac-arena
+

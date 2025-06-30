@@ -1,13 +1,9 @@
-
-
-
 from abc import ABC
-from typing import Dict, Any
+from typing import Any, Dict
 
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 
 from isaac_arena.core.object import Object
-
 
 
 class SceneBase(ABC):
@@ -22,4 +18,3 @@ class SceneBase(ABC):
 
     def get_events_cfg(self) -> Dict[str, Any]:
         pass
-
