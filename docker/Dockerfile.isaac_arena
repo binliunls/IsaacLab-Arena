@@ -11,6 +11,12 @@ WORKDIR /workspace/isaac_arena
 
 COPY . /workspace/isaac_arena
 
+# Install isaac-lab
+RUN ${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip install -e /workspace/isaac_arena/submodules/IsaacLab-Internal/source/isaaclab*/
+
+# Symlink isaac sim to IsaacLab-Internal
+RUN ln -s /isaac-sim/ /workspace/isaac_arena/submodules/IsaacLab-Internal/_isaac_sim
+
 # Install isaac-arena
 RUN ${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip install -e /workspace/isaac_arena/
 
