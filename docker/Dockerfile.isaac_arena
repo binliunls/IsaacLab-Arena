@@ -24,7 +24,8 @@ COPY . /workspaces/isaac_arena
 ENV ISAACLAB_PATH=/workspaces/isaac_arena/submodules/IsaacLab-Internal
 ENV TERM=xterm
 
-# RUN python3 -m pip install numpy==1.26.0
+# Install cmake
+RUN apt-get install -y cmake
 
 # Symlink isaac sim to IsaacLab-Internal
 RUN ln -s /isaac-sim/ /workspaces/isaac_arena/submodules/IsaacLab-Internal/_isaac_sim
