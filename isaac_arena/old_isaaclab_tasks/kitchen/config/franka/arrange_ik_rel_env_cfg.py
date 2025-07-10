@@ -14,10 +14,10 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from mindmap.tasks.mimic_task_definitions.kitchen import mdp
-from mindmap.tasks.mimic_task_definitions.kitchen.arrange_env_cfg import ArrangeEnvCfg
-from mindmap.tasks.mimic_task_definitions.kitchen.mdp import franka_arrange_events
-from mindmap.tasks.mimic_task_definitions.stack.mdp import franka_stack_events
+from isaac_arena.old_isaaclab_tasks.kitchen import mdp
+from isaac_arena.old_isaaclab_tasks.kitchen.arrange_env_cfg import ArrangeEnvCfg
+from isaac_arena.old_isaaclab_tasks.kitchen.mdp import franka_arrange_events
+from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
 
 ##
 # Pre-defined configs
