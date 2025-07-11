@@ -38,5 +38,8 @@ RUN ${ISAACLAB_PATH}/isaaclab.sh -i
 # Install isaac-arena
 RUN pip install -e /workspaces/isaac_arena/
 
+# Install usdcode helper functions
+RUN pip install /workspaces/isaac_arena/dependencies/usdcode-0.1.2-py3-none-any.whl "usd-core>=22.11" numpy==1.26.4 pillow==11.0.0
+
 # Set the entrypoint to bash
 ENTRYPOINT ["bash"]
