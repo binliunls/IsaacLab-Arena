@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
-import math
 import random
+import torch
 from typing import TYPE_CHECKING
 
-from isaaclab.managers import SceneEntityCfg
 import isaaclab.utils.math as math_utils
-import torch
+from isaaclab.managers import SceneEntityCfg
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
@@ -49,9 +48,7 @@ def permute_object_poses(
             # Write pose to simulation
             pose_tensor = torch.tensor(pose_selection_list[i], device=env.device)
             position = pose_tensor[0:3] + env.scene.env_origins[cur_env, 0:3]
-            orientation = math_utils.quat_from_euler_xyz(
-                pose_tensor[3], pose_tensor[4], pose_tensor[5]
-            )
+            orientation = math_utils.quat_from_euler_xyz(pose_tensor[3], pose_tensor[4], pose_tensor[5])
             asset.write_root_pose_to_sim(
                 torch.cat([position, orientation], dim=-1),
                 env_ids=torch.tensor([cur_env], device=env.device),
@@ -94,9 +91,7 @@ def permute_object_poses_relative_to_parent(
             asset = env.scene[asset_cfgs[object_idx].name]
 
             # Write pose to simulation
-            relative_pose_tensor = torch.tensor(
-                relative_object_poses[object_idx], device=env.device
-            )
+            relative_pose_tensor = torch.tensor(relative_object_poses[object_idx], device=env.device)
             positions = parent.data.root_pos_w[cur_env, :] + relative_pose_tensor[0:3]
             # Orientation is absolute for all objects.
             orientations = math_utils.quat_from_euler_xyz(

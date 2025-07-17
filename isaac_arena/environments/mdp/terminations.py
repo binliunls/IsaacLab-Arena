@@ -10,11 +10,11 @@ the termination introduced by the function.
 
 from __future__ import annotations
 
+import torch
 from typing import TYPE_CHECKING
 
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
-import torch
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -48,15 +48,9 @@ def object_in_drawer(
     bounds_y_upper = drawer_bottom_pos[:, 1] + drawer_size[1] / 2
     bounds_z_lower = drawer_bottom_pos[:, 2] - 1e-2  # 1 cm tolerance
     bounds_z_upper = drawer_bottom_pos[:, 2] + DRAWER_HEIGHT
-    object_pos_in_bounds_x = (object_pos[:, 0] > bounds_x_lower) & (
-        object_pos[:, 0] < bounds_x_upper
-    )
-    object_pos_in_bounds_y = (object_pos[:, 1] > bounds_y_lower) & (
-        object_pos[:, 1] < bounds_y_upper
-    )
-    object_pos_in_bounds_z = (object_pos[:, 2] > bounds_z_lower) & (
-        object_pos[:, 2] < bounds_z_upper
-    )
+    object_pos_in_bounds_x = (object_pos[:, 0] > bounds_x_lower) & (object_pos[:, 0] < bounds_x_upper)
+    object_pos_in_bounds_y = (object_pos[:, 1] > bounds_y_lower) & (object_pos[:, 1] < bounds_y_upper)
+    object_pos_in_bounds_z = (object_pos[:, 2] > bounds_z_lower) & (object_pos[:, 2] < bounds_z_upper)
     # Combine them to check if each environment’s object is fully in bounds
     object_in_drawer = object_pos_in_bounds_x & object_pos_in_bounds_y & object_pos_in_bounds_z
 

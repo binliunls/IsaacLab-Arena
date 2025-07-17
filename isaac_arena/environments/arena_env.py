@@ -1,56 +1,22 @@
-from abc import ABC
 from dataclasses import MISSING
 
-from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.envs.mdp.rewards import is_alive
-from isaaclab.envs.mdp.terminations import time_out
-from isaaclab.managers import RewardTermCfg, TerminationTermCfg
-
-from isaac_arena.embodiments.embodiments import EmbodimentBase
-from isaac_arena.metrics.metrics import MetricsBase
-from isaac_arena.scene.scene import SceneBase
-from isaac_arena.tasks.task import TaskBase
-from isaac_arena.embodiments.franka.franka import Franka
-from isaac_arena.scene.instances.kitchen_mug_pick_and_place_scene import KitchenPickAndPlaceScene
-from isaac_arena.scene.pick_and_place_scene import KitchenSceneCfg
-
-from dataclasses import MISSING
-
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
-from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.managers import (
-    ObservationGroupCfg as ObsGroup,
-    ObservationTermCfg as ObsTerm,
-    SceneEntityCfg,
-    TerminationTermCfg as DoneTerm,
-)
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors import CameraCfg
-from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg
 import isaaclab.sim as sim_utils
-from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
-from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
-
-#from . import mdp
 from isaac_arena.environments import mdp
-
-from isaaclab.assets import RigidObjectCfg
+from isaac_arena.environments.mdp import franka_arrange_events, franka_stack_events
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
+from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.envs.mdp.actions.actions_cfg import DifferentialInverseKinematicsActionCfg
-from isaaclab.managers import EventTermCfg as EventTerm, SceneEntityCfg
-from isaaclab.sensors import CameraCfg, ContactSensorCfg, FrameTransformerCfg
-from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
-import isaaclab.sim as sim_utils
+from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import CameraCfg, ContactSensorCfg
+from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg, OffsetCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
-
-from isaac_arena.environments.mdp import franka_arrange_events, franka_stack_events
-#from mindmap.tasks.mimic_task_definitions.kitchen import mdp
-#from mindmap.tasks.mimic_task_definitions.kitchen.arrange_env_cfg import ArrangeEnvCfg
-#from mindmap.tasks.mimic_task_definitions.kitchen.mdp import franka_arrange_events
-#from mindmap.tasks.mimic_task_definitions.stack.mdp import franka_stack_events
 
 ##
 # Pre-defined configs
@@ -58,18 +24,18 @@ from isaac_arena.environments.mdp import franka_arrange_events, franka_stack_eve
 from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG  # isort: skip
 
-#class ArenaEnv(ABC):
+# class ArenaEnv(ABC):
 #    isaac_lab_env_cfg: ManagerBasedRLEnvCfg = MISSING
 #
 #    metrics_cfg: MISSING
 #
 #
-#def compile_env(
+# def compile_env(
 #    scene: SceneBase,
 #    embodiment: EmbodimentBase,
 #    task: TaskBase,
 #    metrics: MetricsBase,
-#) -> ArenaEnv:
+# ) -> ArenaEnv:
 #    # Compose embodiment and scene observation cfg
 #    class ObservationCfg:
 #        embodiment_observation = embodiment.get_observation_cfg()
@@ -99,11 +65,11 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG  # isort: ski
 #    )
 #
 #
-#franka_global = Franka()
-#scene_global = KitchenPickAndPlaceScene()
-## Compose embodiment and scene observation cfg7
+# franka_global = Franka()
+# scene_global = KitchenPickAndPlaceScene()
+# Compose embodiment and scene observation cfg
 #
-#class ObservationsCfg:
+# class ObservationsCfg:
 #    embodiment_observation = franka_global.get_observation_cfg()
 #    # scene_observation = scene.get_observation_cfg()
 #
@@ -112,6 +78,7 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG  # isort: ski
 #     embodiment_events = embodiment.get_events_cfg()
 #     scene_events = scene.get_events_cfg()
 
+
 @configclass
 class KitchenTableSceneCfg(InteractiveSceneCfg):
     """Configuration for the lift scene with a robot and a object.
@@ -119,7 +86,7 @@ class KitchenTableSceneCfg(InteractiveSceneCfg):
     which need to set the target object, robot and end-effector frames
     """
 
-    ### ROBOT + KITCHEN SCENE ###
+    # ROBOT + KITCHEN SCENE
 
     # robots: will be populated by agent env cfg
     robot: ArticulationCfg = MISSING
@@ -134,15 +101,13 @@ class KitchenTableSceneCfg(InteractiveSceneCfg):
     kitchen = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Kitchen",
         # These positions are hardcoded for the kitchen scene. Its important to keep them.
-        init_state=AssetBaseCfg.InitialStateCfg(
-            pos=[0.772, 3.39, -0.895], rot=[0.70711, 0, 0, -0.70711]
-        ),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=[0.772, 3.39, -0.895], rot=[0.70711, 0, 0, -0.70711]),
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/kitchen_scene_teleop_v3.usd"
+            usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/kitchen_scene_teleop_v3.usd"
         ),
     )
 
-    ### HELPER OBJECTS ###
+    # HELPER OBJECTS
 
     # Add a plate right below the bottom of the drawer were the mugs are placed.
     # This will be useful to have a fixed reference to the mugs drawer in mimicgen
@@ -167,31 +132,35 @@ class KitchenTableSceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    ### OBJECTS ON TABLE ###
+    # OBJECTS ON TABLE
 
     mac_n_cheese_on_table = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/mac_n_cheese_on_table",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mac_n_cheese_physics.usd",
+            usd_path=(
+                "omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mac_n_cheese_physics.usd"
+            ),
             scale=(1.0, 1.0, 1.0),
         ),
     )
     tomato_soup_on_table = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/tomato_soup_on_table",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/tomato_soup_physics.usd",
+            usd_path=(
+                "omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/tomato_soup_physics.usd"
+            ),
             scale=(1.0, 1.0, 1.0),
         ),
     )
 
-    ### OBJECTS IN DRAWERS ###
+    # OBJECTS IN DRAWERS
 
     # To have a fixed reference frame for mimicgen
     mug1_in_drawer = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/mug1_in_drawer",
         spawn=UsdFileCfg(
             # usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Isaac/Props/Mugs/SM_Mug_A2.usd",
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug2_physics.usd",
+            usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug2_physics.usd",
             scale=(0.0125, 0.0125, 0.0125),
             activate_contact_sensors=True,
         ),
@@ -199,7 +168,7 @@ class KitchenTableSceneCfg(InteractiveSceneCfg):
     mug2_in_drawer = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/mug2_in_drawer",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug3_physics.usd",
+            usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug3_physics.usd",
             # usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Isaac/Props/Mugs/SM_Mug_D1.usd",
             scale=(0.0125, 0.0125, 0.0125),
         ),
@@ -207,24 +176,31 @@ class KitchenTableSceneCfg(InteractiveSceneCfg):
     sugar_box_in_drawer = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/sugar_box_in_drawer",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/sugar_box_physics.usd",
+            usd_path=(
+                "omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/sugar_box_physics.usd"
+            ),
             scale=(1.0, 1.0, 1.0),
         ),
     )
     pudding_box_in_drawer = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/pudding_box_in_drawer",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/pudding_box_physics.usd",
+            usd_path=(
+                "omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/pudding_box_physics.usd"
+            ),
             scale=(1.0, 1.0, 1.0),
         ),
     )
     gelatin_box_in_drawer = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/gelatin_box_in_drawer",
         spawn=UsdFileCfg(
-            usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/gelatin_box_physics.usd",
+            usd_path=(
+                "omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/gelatin_box_physics.usd"
+            ),
             scale=(1.0, 1.0, 1.0),
         ),
     )
+
 
 @configclass
 class ActionsCfg:
@@ -233,6 +209,7 @@ class ActionsCfg:
     # will be set by agent env cfg
     arm_action: mdp.JointPositionActionCfg = MISSING
     gripper_action: mdp.BinaryJointPositionActionCfg = MISSING
+
 
 @configclass
 class TerminationsCfg:
@@ -246,6 +223,7 @@ class TerminationsCfg:
     )
 
     success = DoneTerm(func=mdp.object_in_drawer)
+
 
 @configclass
 class ObservationsCfg:
@@ -298,15 +276,12 @@ class ObservationsCfg:
     subtask_terms: SubtaskCfg = SubtaskCfg()
 
 
-
 @configclass
 class ArrangeEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the stacking environment."""
 
     # Scene settings
-    scene: KitchenTableSceneCfg = KitchenTableSceneCfg(
-        num_envs=4096, env_spacing=30, replicate_physics=False
-    )
+    scene: KitchenTableSceneCfg = KitchenTableSceneCfg(num_envs=4096, env_spacing=30, replicate_physics=False)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -334,11 +309,12 @@ class ArrangeEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
 
+
 @configclass
 class EventCfg:
     """Configuration for events."""
 
-    ### RANDOMIZE FRANKA ARM POSE ###
+    # RANDOMIZE FRANKA ARM POSE
 
     init_franka_arm_pose = EventTerm(
         func=franka_stack_events.set_default_joint_pose,
@@ -360,7 +336,7 @@ class EventCfg:
         },
     )
 
-    ### RANDOMIZE TABLE OBJECT POSITIONS ###
+    # RANDOMIZE TABLE OBJECT POSITIONS
 
     randomize_table_object_positions = EventTerm(
         func=franka_stack_events.randomize_object_pose,
@@ -383,7 +359,7 @@ class EventCfg:
         },
     )
 
-    ### RANDOMIZE DRAWER OBJECT POSITIONS ###
+    # RANDOMIZE DRAWER OBJECT POSITIONS
 
     permute_drawers = EventTerm(
         func=franka_arrange_events.permute_object_poses,
@@ -430,6 +406,7 @@ class EventCfg:
         },
     )
 
+
 @configclass
 class ArrangeKitchenObjectEnvCfg(ArrangeEnvCfg):
     def __post_init__(self):
@@ -450,9 +427,7 @@ class ArrangeKitchenObjectEnvCfg(ArrangeEnvCfg):
             asset_name="robot",
             joint_names=["panda_joint.*"],
             body_name="panda_hand",
-            controller=DifferentialIKControllerCfg(
-                command_type="pose", use_relative_mode=True, ik_method="dls"
-            ),
+            controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=True, ik_method="dls"),
             scale=0.5,
             body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.107]),
         )
@@ -466,11 +441,9 @@ class ArrangeKitchenObjectEnvCfg(ArrangeEnvCfg):
 
         self.scene.target_mug = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/target_mug",
-            init_state=RigidObjectCfg.InitialStateCfg(
-                pos=[0.35, 0.0, 0.094], rot=[0.0, 0.0, 0.0, 1.0]
-            ),
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.35, 0.0, 0.094], rot=[0.0, 0.0, 0.0, 1.0]),
             spawn=UsdFileCfg(
-                usd_path=f"omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug_physics.usd",
+                usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/mug_physics.usd",
                 scale=(0.0125, 0.0125, 0.0125),
                 activate_contact_sensors=True,
             ),
@@ -512,9 +485,7 @@ class ArrangeKitchenObjectEnvCfg(ArrangeEnvCfg):
                 horizontal_aperture=20.955,
                 clipping_range=(0.1, 1.0e5),
             ),
-            offset=CameraCfg.OffsetCfg(
-                pos=[-1.0, 0.0, 1.6], rot=[0.64, 0.30, -0.30, -0.64], convention="opengl"
-            ),
+            offset=CameraCfg.OffsetCfg(pos=[-1.0, 0.0, 1.6], rot=[0.64, 0.30, -0.30, -0.64], convention="opengl"),
         )
 
         # Listens to the required transforms

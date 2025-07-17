@@ -1,21 +1,15 @@
-from dataclasses import MISSING
-
-from isaaclab.managers import (
-    ObservationGroupCfg as ObsGroup,
-    ObservationTermCfg as ObsTerm,
-)
-from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.utils import configclass
-from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG 
+from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG
 
 from isaac_arena.embodiments.embodiments import EmbodimentBase
-from . import mdp
+from isaaclab.assets.articulation import ArticulationCfg
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.utils import configclass
 
 
 class Franka(EmbodimentBase):
     def __init__(self):
         self.robot = FRANKA_PANDA_HIGH_PD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-    
+
     @configclass
     class ActionsCfg:
         """Action specifications for the MDP."""
@@ -24,7 +18,7 @@ class Franka(EmbodimentBase):
         # arm_action: mdp.JointPositionActionCfg = MISSING
         # gripper_action: mdp.BinaryJointPositionActionCfg = MISSING
         pass
-    
+
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group with state values."""
@@ -40,7 +34,7 @@ class Franka(EmbodimentBase):
         def __post_init__(self):
             self.enable_corruption = False
             self.concatenate_terms = False
-    
+
     def get_robot_cfg(self) -> ArticulationCfg:
         return self.robot
 
@@ -49,4 +43,3 @@ class Franka(EmbodimentBase):
 
     def get_observation_cfg(self) -> PolicyCfg:
         return self.PolicyCfg()
-

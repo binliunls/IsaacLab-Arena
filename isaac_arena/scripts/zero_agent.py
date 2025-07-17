@@ -8,6 +8,7 @@
 """Launch Isaac Sim Simulator first."""
 
 import argparse
+
 from isaaclab.app import AppLauncher
 
 # add argparse arguments
@@ -43,14 +44,16 @@ import gymnasium as gym
 import torch
 
 if args_cli.enable_pinocchio:
-    from isaaclab.devices.openxr.retargeters.humanoid.fourier.gr1t2_retargeter import GR1T2Retargeter
+    from isaaclab.devices.openxr.retargeters.humanoid.fourier.gr2t2_retargeter import GR1T2Retargeter  # noqa: F401
     import isaaclab_tasks.manager_based.manipulation.pick_place  # noqa: F401
 
+import isaac_arena.environments  # noqa: F401
+
 import isaaclab_tasks  # noqa: F401
-import isaac_arena.environments # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
 # PLACEHOLDER: Extension template (do not remove this comment)
+
 
 def main():
     """Zero actions agent with Isaac Lab environment."""

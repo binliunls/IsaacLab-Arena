@@ -1,4 +1,3 @@
-
 # Copyright (c) 2022-2025, The Isaac Lab Project Developers.
 # All rights reserved.
 #
@@ -9,12 +8,12 @@ from __future__ import annotations
 
 import math
 import random
+import torch
 from typing import TYPE_CHECKING
 
+import isaaclab.utils.math as math_utils
 from isaaclab.assets import Articulation, AssetBase
 from isaaclab.managers import SceneEntityCfg
-import isaaclab.utils.math as math_utils
-import torch
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
@@ -28,9 +27,7 @@ def set_default_joint_pose(
 ):
     # Set the default pose for robots in all envs
     asset = env.scene[asset_cfg.name]
-    asset.data.default_joint_pos = torch.tensor(default_pose, device=env.device).repeat(
-        env.num_envs, 1
-    )
+    asset.data.default_joint_pos = torch.tensor(default_pose, device=env.device).repeat(env.num_envs, 1)
 
 
 def randomize_joint_by_gaussian_offset(
@@ -83,9 +80,7 @@ def sample_object_poses(
     pose_range: dict[str, tuple[float, float]] = {},
     max_sample_tries: int = 5000,
 ):
-    range_list = [
-        pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]
-    ]
+    range_list = [pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
     pose_list = []
 
     for i in range(num_objects):
@@ -98,9 +93,7 @@ def sample_object_poses(
                 break
 
             # Check if pose of object is sufficiently far away from all other objects
-            separation_check = [
-                math.dist(sample[:3], pose[:3]) > min_separation for pose in pose_list
-            ]
+            separation_check = [math.dist(sample[:3], pose[:3]) > min_separation for pose in pose_list]
             if False not in separation_check:
                 pose_list.append(sample)
                 break
@@ -136,9 +129,7 @@ def randomize_object_pose(
             # Write pose to simulation
             pose_tensor = torch.tensor([pose_list[i]], device=env.device)
             positions = pose_tensor[:, 0:3] + env.scene.env_origins[cur_env, 0:3]
-            orientations = math_utils.quat_from_euler_xyz(
-                pose_tensor[:, 3], pose_tensor[:, 4], pose_tensor[:, 5]
-            )
+            orientations = math_utils.quat_from_euler_xyz(pose_tensor[:, 3], pose_tensor[:, 4], pose_tensor[:, 5])
             asset.write_root_pose_to_sim(
                 torch.cat([positions, orientations], dim=-1),
                 env_ids=torch.tensor([cur_env], device=env.device),
@@ -186,9 +177,7 @@ def randomize_rigid_objects_in_focus(
             object_states = torch.stack([out_focus_state] * asset.num_objects).to(device=env.device)
             pose_tensor = torch.tensor([pose_list[asset_idx]], device=env.device)
             positions = pose_tensor[:, 0:3] + env.scene.env_origins[cur_env, 0:3]
-            orientations = math_utils.quat_from_euler_xyz(
-                pose_tensor[:, 3], pose_tensor[:, 4], pose_tensor[:, 5]
-            )
+            orientations = math_utils.quat_from_euler_xyz(pose_tensor[:, 3], pose_tensor[:, 4], pose_tensor[:, 5])
             object_states[object_id, 0:3] = positions
             object_states[object_id, 3:7] = orientations
 

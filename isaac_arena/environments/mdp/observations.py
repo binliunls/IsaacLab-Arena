@@ -5,38 +5,32 @@
 
 from __future__ import annotations
 
+import torch
 from typing import TYPE_CHECKING
 
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import ContactSensor, FrameTransformer
-import torch
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-def ee_frame_pos(
-    env: ManagerBasedRLEnv, ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")
-) -> torch.Tensor:
+def ee_frame_pos(env: ManagerBasedRLEnv, ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")) -> torch.Tensor:
     ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
     ee_frame_pos = ee_frame.data.target_pos_w[:, 0, :] - env.scene.env_origins[:, 0:3]
 
     return ee_frame_pos
 
 
-def ee_frame_quat(
-    env: ManagerBasedRLEnv, ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")
-) -> torch.Tensor:
+def ee_frame_quat(env: ManagerBasedRLEnv, ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")) -> torch.Tensor:
     ee_frame: FrameTransformer = env.scene[ee_frame_cfg.name]
     ee_frame_quat = ee_frame.data.target_quat_w[:, 0, :]
 
     return ee_frame_quat
 
 
-def gripper_pos(
-    env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg = SceneEntityCfg("robot")
-) -> torch.Tensor:
+def gripper_pos(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     robot: Articulation = env.scene[robot_cfg.name]
     finger_joint_1 = robot.data.joint_pos[:, -1].clone().unsqueeze(1)
     finger_joint_2 = -1 * robot.data.joint_pos[:, -2].clone().unsqueeze(1)
@@ -67,21 +61,17 @@ def object_grasped(
     pose_diff = torch.linalg.vector_norm(object_pos - end_effector_pos, dim=1)
     grasped = torch.logical_and(
         pose_diff < diff_threshold,
-        torch.abs(robot.data.joint_pos[:, -1] - gripper_open_val.to(env.device))
-        > gripper_threshold,
+        torch.abs(robot.data.joint_pos[:, -1] - gripper_open_val.to(env.device)) > gripper_threshold,
     )
     grasped = torch.logical_and(
         grasped,
-        torch.abs(robot.data.joint_pos[:, -2] - gripper_open_val.to(env.device))
-        > gripper_threshold,
+        torch.abs(robot.data.joint_pos[:, -2] - gripper_open_val.to(env.device)) > gripper_threshold,
     )
 
     # check if contact force is above threshold
     net_contact_forces = contact_sensor.data.net_forces_w_history
     is_contact = (
-        torch.max(torch.norm(net_contact_forces[:, :, contact_sensor_cfg.body_ids], dim=-1), dim=1)[
-            0
-        ]
+        torch.max(torch.norm(net_contact_forces[:, :, contact_sensor_cfg.body_ids], dim=-1), dim=1)[0]
         > contact_threshold
     )
     grasped = torch.logical_and(grasped, is_contact)
