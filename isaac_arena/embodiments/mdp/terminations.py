@@ -7,7 +7,7 @@
 The functions can be passed to the :class:`isaaclab.managers.TerminationTermCfg` object to enable
 the termination introduced by the function.
 """
-
+# TODO(cvolk): Move this file to terminations/
 from __future__ import annotations
 
 import torch
@@ -20,11 +20,12 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
+# TODO(cvolk): Pass these as args
 def object_in_drawer(
     env: ManagerBasedRLEnv,
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    object_cfg: SceneEntityCfg = SceneEntityCfg("target_mug"),
-    drawer_bottom_cfg: SceneEntityCfg = SceneEntityCfg("bottom_of_drawer_with_mugs"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("pick_up_object"),
+    drawer_bottom_cfg: SceneEntityCfg = SceneEntityCfg("destination_object"),
     gripper_open_val: torch.tensor = torch.tensor([0.04]),
 ) -> torch.Tensor:
     """Check if an object is dropped by the specified robot."""

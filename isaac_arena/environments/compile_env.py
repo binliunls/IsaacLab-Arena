@@ -32,16 +32,3 @@
 #        metrics_cfg=metrics.get_metrics_cfg(),
 #    )
 #
-#
-# franka_global = Franka()
-# scene_global = KitchenPickAndPlaceScene()
-# Compose embodiment and scene observation cfg
-#
-# class ObservationsCfg:
-#    embodiment_observation = franka_global.get_observation_cfg()
-#    # scene_observation = scene.get_observation_cfg()
-#
-# Compose embodiment and scene events cfg
-# class EventsCfg:
-#     embodiment_events = embodiment.get_events_cfg()
-#     scene_events = scene.get_events_cfg()

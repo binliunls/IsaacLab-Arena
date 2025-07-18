@@ -57,6 +57,10 @@ from isaaclab_tasks.utils import parse_env_cfg
 
 def main():
     """Zero actions agent with Isaac Lab environment."""
+
+    # compile_arena_env(args.cli)
+    # This creates the config (and the environment __init__.py entry points? )
+
     # parse configuration
     env_cfg = parse_env_cfg(
         args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
@@ -64,9 +68,6 @@ def main():
     # create environment
     env = gym.make(args_cli.task, cfg=env_cfg)
 
-    # print info (this is vectorized environment)
-    print(f"[INFO]: Gym observation space: {env.observation_space}")
-    print(f"[INFO]: Gym action space: {env.action_space}")
     # reset environment
     env.reset()
     # simulate environment
