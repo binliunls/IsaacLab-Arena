@@ -17,8 +17,6 @@ class ObservationsCfg:
 
 @configclass
 class EventCfg:
-    """Configuration for Franka."""
-
     pass
 
 
