@@ -15,7 +15,6 @@ class IsaacArenaEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
     scene: InteractiveSceneCfg
 
-    # Take in the passed values as parameters
     observations: ObservationsCfg
     actions: ActionsCfg
     events: EventCfg

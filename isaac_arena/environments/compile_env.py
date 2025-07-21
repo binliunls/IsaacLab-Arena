@@ -2,7 +2,7 @@ import argparse
 
 from isaac_arena.embodiments.embodiment_base import EmbodimentBase
 from isaac_arena.embodiments.franka.franka_embodiment import FrankaEmbodiment
-from isaac_arena.environments.arena_env import IsaacArenaEnvCfg
+from isaac_arena.environments.isaac_arena_env import IsaacArenaEnvCfg
 from isaac_arena.scene.pick_and_place_scene import MugInDrawerKitchenPickAndPlaceScene
 from isaac_arena.scene.scene import SceneBase
 from isaac_arena.tasks.pick_and_place_task import PickAndPlaceTaskCfg
