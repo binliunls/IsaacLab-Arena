@@ -1,50 +1,38 @@
-from enum import Enum
-
-from isaac_arena.scene.scene import PickAndPlaceScene
+import isaaclab.envs.mdp as mdp_isaac_lab
+from isaac_arena.embodiments.mdp.terminations import object_in_drawer
 from isaac_arena.tasks.task import TaskBase
+from isaaclab.managers import SceneEntityCfg, TerminationTermCfg
+from isaaclab.utils import configclass
 
 
-class PickAndPlaceCompletionType(Enum):
-    ON = "on"
-    IN = "in"
+@configclass
+class TerminationsCfg:
+    """Termination terms for the MDP."""
+
+    # TODO(cvolk): Make this config generic and move instance out.
+    # time_out: TerminationTermCfg = MISSING
+    # termination_terms: TerminationTermCfg = MISSING
+    # success: TerminationTermCfg = MISSING
+    time_out = TerminationTermCfg(func=mdp_isaac_lab.time_out, time_out=True)
+
+    # TODO(alex.millane, 2025.07.22): This is specific to the drawer scene. Make this generic
+    # to support other destination objects.
+    object_dropped = TerminationTermCfg(
+        func=mdp_isaac_lab.root_height_below_minimum,
+        params={"minimum_height": -0.2, "asset_cfg": SceneEntityCfg("pick_up_object")},
+    )
+    # TODO(alex.millane, 2025.07.22): This is specific to the drawer scene. Make this generic
+    # to support other destination objects.
+    success = TerminationTermCfg(func=object_in_drawer)
 
 
 class PickAndPlaceTaskCfg(TaskBase):
-    def __init__(self, completion_type: PickAndPlaceCompletionType):
-        self.completion_type = completion_type
+    def __init__(self):
+        super().__init__()
 
-    def get_termination_cfg(self, scene: PickAndPlaceScene):
-        # TODO(cvolk): Implement proper termination configuration using IsaacLab mdp functions
-        # For now, return None to avoid undefined class errors here and below on pre-commit checks.
-        return None
-
-        # Original implementation (commented out due to undefined classes):
-        # return [
-        #     self._get_success_termination_cfg(scene),
-        #     self._get_failure_termination_cfg(scene),
-        # ]
+    def get_termination_cfg(self):
+        # NOTE(alex.millane, 2025.07.22): This looks non-composable to me.
+        return TerminationsCfg()
 
     def get_prompt(self):
-        return (
-            f"Pick {self.scene.target_object.name} and place"
-            f" {self.completion_type.name} {self.scene.destination_object.name}"
-        )
-
-    # def _get_success_termination_cfg(self, scene: PickAndPlaceScene):
-    #     if self.completion_type == PickAndPlaceCompletionType.OBJECT_ON:
-    #         return ObjectInTerminationCfg(
-    #             target_object=scene.place_object,
-    #             destination_object=scene.pick_up_object,
-    #         )
-    #     elif self.completion_type == PickAndPlaceCompletionType.OBJECT_IN:
-    #         return ObjectOnTerminationCfg(
-    #             target_object=scene.place_object,
-    #             destination_object=scene.pick_up_object,
-    #         )
-    #     else:
-    #         raise ValueError(f"Invalid completion type: {self.completion_type}")
-
-    # def _get_failure_termination_cfg(self, scene: PickAndPlaceScene):
-    #     return ObjectFallenTerminationCfg(
-    #         target_object=scene.pick_up_object,
-    #     )
+        raise NotImplementedError("Function not implemented yet.")

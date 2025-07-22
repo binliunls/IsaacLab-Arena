@@ -1,5 +1,5 @@
 import isaaclab.sim as sim_utils
-from isaac_arena.scene.pick_and_place_scene import PickAndPlaceSceneBase, SceneCfg
+from isaac_arena.scene.pick_and_place_scene import KitchenSceneCfg, PickAndPlaceSceneBase
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 
@@ -26,6 +26,8 @@ class KitchenPickAndPlaceScene(PickAndPlaceSceneBase):
             ),
         )
 
+        # TODO(cvolk): This seems to be more of a taask specific definition than a scene specific definition.
+        # Could this be moved to a task definition?
         self.destination_object = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/bottom_of_drawer_with_mugs",
             spawn=sim_utils.CuboidCfg(
@@ -42,26 +44,7 @@ class KitchenPickAndPlaceScene(PickAndPlaceSceneBase):
             destination_object=self.destination_object,
         )
 
-    def get_scene_cfg(self) -> SceneCfg:
-        return SceneCfg(
+    def get_scene_cfg(self) -> KitchenSceneCfg:
+        return KitchenSceneCfg(
             background_scene=self.background_scene, object=self.destination_object, pick_up_object=self.pick_up_object
         )
-
-    # TODO decide on how we do randomization.
-    # def get_events_cfg(self) -> Dict[str, Any]:
-    #     class EventsCfg:
-    #         randomize_pick_up_object = RandomizeObjectCfg(
-    #             object=self.pick_up_object,
-    #             assets_list=[
-    #                 "Object/mug.usd",
-    #                 "Object/cup.usd",
-    #                 "Object/bowl.usd",
-    #             ],
-    #         )
-    #         randomize_pick_up_object_position = RandomizeObjectPositionCfg(
-    #             object=self.pick_up_object,
-    #             position_std=[0.1, 0.1, 0.1],
-    #             orientation_std=[0.1, 0.1, 0.1],
-    #         )
-
-    #     return EventsCfg()

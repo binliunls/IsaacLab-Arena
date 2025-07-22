@@ -1,11 +1,7 @@
 from abc import ABC
 
-from isaac_arena.scene.scene import SceneBase
-
 
 class TaskBase(ABC):
-    def __init__(self, scene: SceneBase):
-        self.scene = scene
 
     def get_termination_cfg(self):
         pass
