@@ -22,7 +22,8 @@ pre-commit:
     - alias pip3='/isaac-sim/python.sh -m pip'
     - alias pytest='/isaac-sim/python.sh -m pytest'
     # - pre-commit run --all-files
-    - pytest -sv isaac_arena/tests
+    # - pytest -sv isaac_arena/tests
+    - /isaac-sim/python -m pytest -sv isaac_arena/tests
   cache:
     key: "${CI_PROJECT_ID}"
     paths:
