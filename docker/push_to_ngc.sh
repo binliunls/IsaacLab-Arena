@@ -7,7 +7,7 @@ PUSH_TO_NGC=false
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-while getopts ":t:v:dph" OPTION; do
+while getopts ":t:ph" OPTION; do
     case $OPTION in
         t)
             TAG_NAME=$OPTARG
@@ -18,15 +18,13 @@ while getopts ":t:v:dph" OPTION; do
             echo "PUSH_TO_NGC (build and push to ngc)."
             ;;
         h | *)
-            echo "Helper script for pushing mindmap images to NGC."
+            echo "Helper script for pushing isaac_arena images to NGC."
             echo "Usage:"
             echo "- pushing to NGC:"
             echo "    run_docker.sh -p -t tag_name"
             echo "- see help message:"
             echo "    run_docker.sh -h"
             echo ""
-            echo "  -d Dry run mode."
-            echo "  -v Dataset path for dry run mode."
             echo "  -p Push to NGC mode."
             echo "  -t Tag name of the image."
             echo "  -h help (this output)"
