@@ -39,9 +39,9 @@ def run_subprocess(cmd, env=None):
         raise
 
 
-# The runner function in a way that a result is returned to the main process, before
-# simulation_app.close() can ruin everything.
 def runner(q: multiprocessing.Queue, function: Callable[[SimulationAppContext, Any], bool], *args):
+    # The runner runs a function in a way that a result is returned to the main process, before
+    # simulation_app.close() can ruin everything.
     # Simulation app args. For now, we just make these default + headless.
     parser = argparse.ArgumentParser(description="Isaac Arena CLI parser.")
     AppLauncher.add_app_launcher_args(parser)
