@@ -4,6 +4,7 @@ import isaaclab.envs.mdp as mdp_isaac_lab
 from isaac_arena.embodiments.embodiment_base import ActionsCfg, EmbodimentBase, EventCfg, ObservationsCfg
 from isaac_arena.embodiments.mdp import franka_stack_events
 from isaac_arena.embodiments.mdp.observations import ee_frame_pos, ee_frame_quat, gripper_pos
+from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
 from isaaclab.envs.mdp.actions.actions_cfg import BinaryJointPositionActionCfg, DifferentialInverseKinematicsActionCfg
 from isaaclab.managers import ActionTermCfg
@@ -11,16 +12,62 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.markers.config import FRAME_MARKER_CFG
+from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg, OffsetCfg
 from isaaclab.utils import configclass
 
 
 class FrankaEmbodiment(EmbodimentBase):
     def __init__(self):
-        self.robot = FRANKA_PANDA_HIGH_PD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene_config = FrankaSceneCfg()
         self.action_config = FrankaActionsCfg()
         self.observation_config = FrankaObservationsCfg()
         self.event_config = FrankaEventCfg()
-        self.robot.spawn.semantic_tags = [("class", "robot_arm")]
+
+
+@configclass
+class FrankaSceneCfg:
+    """Additions to the scene configuration coming from the Franka embodiment."""
+
+    # The robot
+    robot: ArticulationCfg = FRANKA_PANDA_HIGH_PD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+    # The end-effector frame marker
+    ee_frame: FrameTransformerCfg = FrameTransformerCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/panda_link0",
+        debug_vis=False,
+        # visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/panda_hand",
+                name="end_effector",
+                offset=OffsetCfg(
+                    pos=[0.0, 0.0, 0.1034],
+                ),
+            ),
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/panda_rightfinger",
+                name="tool_rightfinger",
+                offset=OffsetCfg(
+                    pos=(0.0, 0.0, 0.046),
+                ),
+            ),
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/panda_leftfinger",
+                name="tool_leftfinger",
+                offset=OffsetCfg(
+                    pos=(0.0, 0.0, 0.046),
+                ),
+            ),
+        ],
+    )
+
+    def __post_init__(self):
+        # Add a marker to the end-effector frame
+        marker_cfg = FRAME_MARKER_CFG.copy()
+        marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
+        marker_cfg.prim_path = "/Visuals/FrameTransformer"
+        self.ee_frame.visualizer_cfg = marker_cfg
 
 
 @configclass

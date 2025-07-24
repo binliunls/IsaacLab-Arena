@@ -1,22 +1,25 @@
 from dataclasses import MISSING
+from typing import Any
 
 import isaaclab.sim as sim_utils
 from isaac_arena.scene.scene import SceneBase
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
-from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 
 
 @configclass
-class PickAndPlaceSceneCfg(InteractiveSceneCfg):
-    background_scene: AssetBaseCfg = MISSING
-    pick_up_object: RigidObjectCfg = MISSING
-    destination_object: RigidObjectCfg = MISSING
+class PickAndPlaceSceneCfg:
 
-    # TODO(cvolk): It seems like the scene needs to hold a robot
-    robot: ArticulationCfg = MISSING
+    # The scene of the environment where the task is performed
+    background_scene: AssetBaseCfg = MISSING
+
+    # The object to pick up
+    pick_up_object: RigidObjectCfg = MISSING
+
+    # The object to place the pick_up_object on/into
+    destination_object: RigidObjectCfg = MISSING
 
 
 class KitchenPickAndPlaceScene(SceneBase):
@@ -44,14 +47,16 @@ class KitchenPickAndPlaceScene(SceneBase):
 
     def get_scene_cfg(self) -> PickAndPlaceSceneCfg:
         return PickAndPlaceSceneCfg(
-            num_envs=4096,
-            env_spacing=30.0,
-            replicate_physics=False,
             background_scene=self.background_scene,
             pick_up_object=self.pick_up_object,
             destination_object=self.destination_object,
-            robot=self.robot,
         )
+
+    def get_observation_cfg(self) -> Any:
+        pass
+
+    def get_events_cfg(self) -> Any:
+        pass
 
 
 class MugInDrawerKitchenPickAndPlaceScene(KitchenPickAndPlaceScene):
