@@ -17,7 +17,7 @@ from isaac_arena.environments.isaac_arena_manager_based_env import IsaacArenaMan
 from isaaclab_tasks.utils import parse_env_cfg
 
 
-def run_env(isaac_arena_environment: IsaacArenaEnvironment, args_cli: argparse.Namespace) -> gym.Env:
+def run_environment(isaac_arena_environment: IsaacArenaEnvironment, args_cli: argparse.Namespace) -> gym.Env:
     """Compile the arena environment configuration to a gymnasium environment.
 
     Args:

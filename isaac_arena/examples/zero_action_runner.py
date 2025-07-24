@@ -33,7 +33,7 @@ def main():
 
         # Imports have to follow simulation startup.
         from isaac_arena.embodiments.franka.franka_embodiment import FrankaEmbodiment
-        from isaac_arena.environments.compile_env import run_env
+        from isaac_arena.environments.compile_env import run_environment
         from isaac_arena.environments.isaac_arena_environment import IsaacArenaEnvironment
         from isaac_arena.scene.pick_and_place_scene import MugInDrawerKitchenPickAndPlaceScene
         from isaac_arena.tasks.pick_and_place_task import PickAndPlaceTaskCfg
@@ -47,7 +47,7 @@ def main():
         )
 
         # Compile an IsaacLab compatible arena environment configuration
-        env = run_env(isaac_arena_environment, args_cli)
+        env = run_environment(isaac_arena_environment, args_cli)
 
         # Run some zero actions.
         for _ in tqdm.tqdm(range(args_cli.num_steps)):
