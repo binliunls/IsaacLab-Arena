@@ -1,4 +1,5 @@
 from dataclasses import MISSING
+from typing import Any
 
 import isaaclab.sim as sim_utils
 from isaac_arena.scene.scene import SceneBase
@@ -50,6 +51,12 @@ class KitchenPickAndPlaceScene(SceneBase):
             pick_up_object=self.pick_up_object,
             destination_object=self.destination_object,
         )
+
+    def get_observation_cfg(self) -> Any:
+        pass
+
+    def get_events_cfg(self) -> Any:
+        pass
 
 
 class MugInDrawerKitchenPickAndPlaceScene(KitchenPickAndPlaceScene):
