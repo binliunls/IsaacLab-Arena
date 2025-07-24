@@ -4,6 +4,7 @@ import isaaclab.envs.mdp as mdp_isaac_lab
 from isaac_arena.embodiments.embodiment_base import ActionsCfg, EmbodimentBase, EventCfg, ObservationsCfg
 from isaac_arena.embodiments.mdp import franka_stack_events
 from isaac_arena.embodiments.mdp.observations import ee_frame_pos, ee_frame_quat, gripper_pos
+from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
 from isaaclab.envs.mdp.actions.actions_cfg import BinaryJointPositionActionCfg, DifferentialInverseKinematicsActionCfg
 from isaaclab.managers import ActionTermCfg
@@ -12,9 +13,6 @@ from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
-
-from dataclasses import MISSING
-from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
 
 
 class FrankaEmbodiment(EmbodimentBase):

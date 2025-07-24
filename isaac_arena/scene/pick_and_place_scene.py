@@ -1,4 +1,3 @@
-
 from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
@@ -44,7 +43,6 @@ class KitchenPickAndPlaceScene(SceneBase):
 
         # Robot configuration
         self.robot: ArticulationCfg = robot
-
 
     def get_scene_cfg(self) -> PickAndPlaceSceneCfg:
         return PickAndPlaceSceneCfg(

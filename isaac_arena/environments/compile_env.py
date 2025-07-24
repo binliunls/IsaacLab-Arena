@@ -11,12 +11,12 @@
 import argparse
 import gymnasium as gym
 
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab_tasks.utils import parse_env_cfg
-
 from isaac_arena.environments.isaac_arena_environment import IsaacArenaEnvironment
 from isaac_arena.environments.isaac_arena_manager_based_env import IsaacArenaManagerBasedRLEnvCfg
 from isaac_arena.utils.configclass import combine_configclass_instances
+from isaaclab.scene import InteractiveSceneCfg
+
+from isaaclab_tasks.utils import parse_env_cfg
 
 
 def run_environment(isaac_arena_environment: IsaacArenaEnvironment, args_cli: argparse.Namespace) -> gym.Env:

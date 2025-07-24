@@ -10,15 +10,31 @@
 
 import keyword
 import types
+from typing import Any
+import dataclasses
 
 from isaaclab.utils import configclass
+
 
 # NOTE(alexmillane, 2025-07-24): This is copied from dataclasses.py, but altered in the final line
 # to produce a configclass instead of a dataclass
 # NOTE(alexmillane, 2025-07-24): The file this was taken from has no license header.
-def make_configclass(cls_name, fields, *, bases=(), namespace=None, init=True,
-                     repr=True, eq=True, order=False, unsafe_hash=False,
-                     frozen=False, match_args=True, kw_only=False, slots=False):
+def make_configclass(
+    cls_name,
+    fields,
+    *,
+    bases=(),
+    namespace=None,
+    init=True,
+    repr=True,
+    eq=True,
+    order=False,
+    unsafe_hash=False,
+    frozen=False,
+    match_args=True,
+    kw_only=False,
+    slots=False,
+):
     """Return a new dynamically created dataclass.
 
     The dataclass name will be 'cls_name'.  'fields' is an iterable
@@ -53,21 +69,24 @@ def make_configclass(cls_name, fields, *, bases=(), namespace=None, init=True,
     for item in fields:
         if isinstance(item, str):
             name = item
-            tp = 'typing.Any'
+            tp = "typing.Any"
         elif len(item) == 2:
-            name, tp, = item
+            (
+                name,
+                tp,
+            ) = item
         elif len(item) == 3:
             name, tp, spec = item
             defaults[name] = spec
         else:
-            raise TypeError(f'Invalid field: {item!r}')
+            raise TypeError(f"Invalid field: {item!r}")
 
         if not isinstance(name, str) or not name.isidentifier():
-            raise TypeError(f'Field names must be valid identifiers: {name!r}')
+            raise TypeError(f"Field names must be valid identifiers: {name!r}")
         if keyword.iskeyword(name):
-            raise TypeError(f'Field names must not be keywords: {name!r}')
+            raise TypeError(f"Field names must not be keywords: {name!r}")
         if name in seen:
-            raise TypeError(f'Field name duplicated: {name!r}')
+            raise TypeError(f"Field name duplicated: {name!r}")
 
         seen.add(name)
         annotations[name] = tp
@@ -76,22 +95,28 @@ def make_configclass(cls_name, fields, *, bases=(), namespace=None, init=True,
     def exec_body_callback(ns):
         ns.update(namespace)
         ns.update(defaults)
-        ns['__annotations__'] = annotations
+        ns["__annotations__"] = annotations
 
     # We use `types.new_class()` instead of simply `type()` to allow dynamic creation
     # of generic dataclasses.
     cls = types.new_class(cls_name, bases, {}, exec_body_callback)
 
     # Apply the normal decorator.
-    return configclass(cls, init=init, repr=repr, eq=eq, order=order,
-                       unsafe_hash=unsafe_hash, frozen=frozen,
-                       match_args=match_args, kw_only=kw_only, slots=slots)
+    return configclass(
+        cls,
+        init=init,
+        repr=repr,
+        eq=eq,
+        order=order,
+        unsafe_hash=unsafe_hash,
+        frozen=frozen,
+        match_args=match_args,
+        kw_only=kw_only,
+        slots=slots,
+    )
 
-from typing import List, Tuple, Any
-import dataclasses
 
-
-def get_field_info(config_class: configclass) -> List[Tuple[str, type, Any]]:
+def get_field_info(config_class: configclass) -> list[tuple[str, type, Any]]:
     """Get the field info of a configclass.
 
     Args:
@@ -109,7 +134,7 @@ def get_field_info(config_class: configclass) -> List[Tuple[str, type, Any]]:
         if f.default is not dataclasses.MISSING:
             field_info += (f.default,)
         elif f.default_factory is not dataclasses.MISSING:
-                field_info += (f.default_factory,)
+            field_info += (f.default_factory,)
         field_info_list.append(field_info)
     return field_info_list
 
@@ -130,7 +155,7 @@ def combine_configclasses(name: str, *input_configclasses: configclass) -> confi
     return make_configclass(name, field_info_list)
 
 
-def combine_configclass_instances(name: str,*input_configclass_instances: configclass) -> configclass:
+def combine_configclass_instances(name: str, *input_configclass_instances: configclass) -> configclass:
     """Combine a list of configclass instances into a single configclass instance.
 
     Args:
@@ -140,7 +165,7 @@ def combine_configclass_instances(name: str,*input_configclass_instances: config
     Returns:
         A new configclass instance that is the combination of the input configclass instances.
     """
-    input_configclasses: List[type] = [type(i) for i in input_configclass_instances]
+    input_configclasses: list[type] = [type(i) for i in input_configclass_instances]
     combined_configclass = combine_configclasses(name, *input_configclasses)
     # Create an instance of the combined type
     combined_configclass_instance = combined_configclass()

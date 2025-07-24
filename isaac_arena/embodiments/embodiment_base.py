@@ -1,7 +1,6 @@
 from abc import ABC
 from typing import Any
 
-from isaaclab.assets import ArticulationCfg
 from isaaclab.utils import configclass
 
 
@@ -22,6 +21,7 @@ class EventCfg:
 
 class EmbodimentBase(ABC):
 
+    # FIX: This is wrong. These are class variables.
     scene_config: Any | None = None
     action_config: ActionsCfg | None = None
     observation_config: ObservationsCfg | None = None
