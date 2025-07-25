@@ -35,14 +35,19 @@ def main():
         from isaac_arena.embodiments.franka.franka_embodiment import FrankaEmbodiment
         from isaac_arena.environments.compile_env import run_environment
         from isaac_arena.environments.isaac_arena_environment import IsaacArenaEnvironment
-        from isaac_arena.scene.pick_and_place_scene import MugInDrawerKitchenPickAndPlaceScene
+        from isaac_arena.scene.get_scene_details import get_scene_details
+        from isaac_arena.scene.pick_and_place_scene import PickAndPlaceScene
         from isaac_arena.tasks.pick_and_place_task import PickAndPlaceTaskCfg
+
+        scene_details = get_scene_details(args_cli.background, args_cli.pick_up_object)
 
         # Arena Environment
         isaac_arena_environment = IsaacArenaEnvironment(
             name="kitchen_pick_and_place",
             embodiment=FrankaEmbodiment(),
-            scene=MugInDrawerKitchenPickAndPlaceScene(),
+            scene=PickAndPlaceScene(
+                scene_details["background_scene"], scene_details["pick_up_object"], scene_details["destination_object"]
+            ),
             task=PickAndPlaceTaskCfg(),
         )
 
