@@ -1,16 +1,19 @@
 import isaaclab.sim as sim_utils
+from isaac_arena.scene.asset import Asset
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 
 
-class Background:
+class Background(Asset):
     """
     Encapsulates the background scene config for a environment.
     """
 
-    def __init__(self, background_scene: AssetBaseCfg, destination_object: RigidObjectCfg):
+    def __init__(self, background_scene: AssetBaseCfg, destination_object: RigidObjectCfg, name: str):
         self.background_scene = background_scene
         self.destination_object = destination_object
+        self.tags = ["background"]
+        self.name = name
 
     def get_background(self) -> AssetBaseCfg:
         """Return the configured background scene asset."""
@@ -45,4 +48,5 @@ class Kitchen(Background):
                     activate_contact_sensors=True,
                 ),
             ),
+            name="kitchen",
         )
