@@ -58,7 +58,7 @@ def run_environment(isaac_arena_environment: IsaacArenaEnvironment, args_cli: ar
     )
 
     gym.register(
-        id=isaac_arena_environment.name,  # args_cli.task,
+        id=isaac_arena_environment.name,
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
         kwargs={
             "env_cfg_entry_point": arena_env_cfg,
