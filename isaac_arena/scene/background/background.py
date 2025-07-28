@@ -1,4 +1,15 @@
+# Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+#
+# NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+# property and proprietary rights in and to this material, related
+# documentation and any modifications thereto. Any use, reproduction,
+# disclosure or distribution of this material and related documentation
+# without an express license agreement from NVIDIA CORPORATION or
+# its affiliates is strictly prohibited.
+#
+
 import isaaclab.sim as sim_utils
+from isaac_arena.geometry.pose import Pose
 from isaac_arena.scene.asset import Asset
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
@@ -9,9 +20,21 @@ class Background(Asset):
     Encapsulates the background scene config for a environment.
     """
 
-    def __init__(self, background_scene_cfg: AssetBaseCfg, name: str, tags: list[str]):
+    def __init__(self, background_scene_cfg: AssetBaseCfg, name: str, tags: list[str], robot_initial_pose: Pose | None):
         super().__init__(name, tags)
         self.background_scene_cfg = background_scene_cfg
+        if robot_initial_pose is not None:
+            self.robot_initial_pose = robot_initial_pose
+        else:
+            self.robot_initial_pose = Pose.identity()
+
+    def get_background_cfg(self) -> AssetBaseCfg:
+        """Return the configured background scene asset."""
+        return self.background_scene_cfg
+
+    def get_robot_initial_pose(self) -> Pose:
+        """Return the configured robot initial pose."""
+        return self.robot_initial_pose
 
 
 class PickAndPlaceBackground(Background):
@@ -24,15 +47,12 @@ class PickAndPlaceBackground(Background):
         background_scene_cfg: AssetBaseCfg,
         destination_object_cfg: RigidObjectCfg,
         pick_up_object_location_cfg: RigidObjectCfg.InitialStateCfg,
+        robot_initial_pose: Pose | None,
         name: str,
     ):
-        super().__init__(background_scene_cfg, name, ["background", "pick_and_place"])
+        super().__init__(background_scene_cfg, name, ["background", "pick_and_place"], robot_initial_pose)
         self.destination_object_cfg = destination_object_cfg
         self.pick_up_object_location_cfg = pick_up_object_location_cfg
-
-    def get_background_cfg(self) -> AssetBaseCfg:
-        """Return the configured background scene asset."""
-        return self.background_scene_cfg
 
     def get_destination_cfg(self) -> RigidObjectCfg:
         """Return the configured destination-object asset."""
@@ -60,17 +80,17 @@ class KitchenPickAndPlaceBackground(PickAndPlaceBackground):
                     )
                 ),
             ),
+            # NOTE(alexmillane, 2025.07.28): We used to use the bottom of drawer with mugs as the destination object.
+            # I have just changed it to the cabinet. But this is not tested as working yet.
             destination_object_cfg=RigidObjectCfg(
-                prim_path="{ENV_REGEX_NS}/bottom_of_drawer_with_mugs",
-                spawn=sim_utils.CuboidCfg(
-                    size=[0.4, 0.65, 0.01],
-                    rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
-                    collision_props=sim_utils.CollisionPropertiesCfg(),
-                    activate_contact_sensors=True,
-                ),
+                prim_path="{ENV_REGEX_NS}/Kitchen/Cabinet_B_02",
             ),
             pick_up_object_location_cfg=RigidObjectCfg.InitialStateCfg(
                 pos=[0.35, 0.0, 0.094], rot=[0.0, 0.0, 0.0, 1.0]
+            ),
+            robot_initial_pose=Pose(
+                position_xyz=(0.0, 0.0, 0.0),
+                rotation_wxyz=(1.0, 0.0, 0.0, 0.0),
             ),
             name="kitchen_pick_and_place",
         )
@@ -96,6 +116,10 @@ class PackingTablePickAndPlaceBackground(PickAndPlaceBackground):
             ),
             pick_up_object_location_cfg=RigidObjectCfg.InitialStateCfg(
                 pos=[-0.35, 0.40, 1.0413], rot=[1.0, 0.0, 0.0, 0.0]
+            ),
+            robot_initial_pose=Pose(
+                position_xyz=(0.0, 0.0, 1.0),
+                rotation_wxyz=(0.7071068, 0, 0, 0.7071068),
             ),
             name="packing_table_pick_and_place",
         )

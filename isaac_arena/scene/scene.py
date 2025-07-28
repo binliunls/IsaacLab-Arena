@@ -16,11 +16,11 @@ from isaac_arena.geometry.pose import Pose
 
 class SceneBase(ABC):
     def __init__(self):
-        # The default initial position of the robot
-        self.robot_initial_pose = Pose.identity()
+        pass
 
+    @abstractmethod
     def get_robot_initial_pose(self) -> Pose:
-        return self.robot_initial_pose
+        raise NotImplementedError
 
     @abstractmethod
     def get_scene_cfg(self) -> Any:
