@@ -14,6 +14,7 @@ import isaaclab.envs.mdp as mdp_isaac_lab
 from isaac_arena.embodiments.embodiment_base import ActionsCfg, EmbodimentBase, EventCfg, ObservationsCfg
 from isaac_arena.embodiments.mdp import franka_stack_events
 from isaac_arena.embodiments.mdp.observations import ee_frame_pos, ee_frame_quat, gripper_pos
+from isaac_arena.scene.pick_and_place_scene import AssetBaseCfg
 from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
 from isaaclab.envs.mdp.actions.actions_cfg import BinaryJointPositionActionCfg, DifferentialInverseKinematicsActionCfg
@@ -24,6 +25,7 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.markers.config import FRAME_MARKER_CFG
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg, OffsetCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 
 
@@ -41,6 +43,18 @@ class FrankaSceneCfg:
 
     # The robot
     robot: ArticulationCfg = FRANKA_PANDA_HIGH_PD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+    # The stand for the franka
+    # TODO(alexmillane, 2025-07-28): We probably want to make the stand an optional addition.
+    stand: AssetBaseCfg = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/Robot_Stand",
+        init_state=AssetBaseCfg.InitialStateCfg(pos=[-0.05, 0.0, 0.0], rot=[1.0, 0.0, 0.0, 0.0]),
+        spawn=UsdFileCfg(
+            usd_path="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props/Mounts/Stand/stand_instanceable.usd",
+            scale=(1.2, 1.2, 1.7),
+            activate_contact_sensors=False,
+        ),
+    )
 
     # The end-effector frame marker
     ee_frame: FrameTransformerCfg = FrameTransformerCfg(

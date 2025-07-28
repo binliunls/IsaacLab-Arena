@@ -8,7 +8,6 @@
 # its affiliates is strictly prohibited.
 #
 
-from typing import Tuple
 from dataclasses import dataclass
 
 
@@ -22,12 +21,12 @@ class Pose:
     q_B = q_A * q_B_A
     """
 
-    position_xyz: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    position_xyz: tuple[float, float, float] = (0.0, 0.0, 0.0)
     """Translation vector from frame A to frame B."""
 
-    rotation_wxyz: Tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    rotation_wxyz: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
     """Quaternion from frame A to frame B. Order is (w, x, y, z)."""
 
     @staticmethod
-    def identity() -> 'Pose':
+    def identity() -> "Pose":
         return Pose(position_xyz=(0.0, 0.0, 0.0), rotation_wxyz=(1.0, 0.0, 0.0, 0.0))

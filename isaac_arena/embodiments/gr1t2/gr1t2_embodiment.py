@@ -18,7 +18,6 @@ import isaaclab.controllers.utils as ControllerUtils
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.managers import EventTermCfg as EventTerm
 import isaaclab.envs.mdp as base_mdp
 import isaaclab_tasks.manager_based.manipulation.pick_place.mdp as mdp
 
@@ -132,4 +131,7 @@ class GR1T2ObservationsCfg(ObservationsCfg):
 class GR1T2EventCfg(EventCfg):
     """Configuration for events."""
 
-    reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
+    # NOTE(alexmillane, 2025-07-28): I removed this event term because it was resetting
+    # elements of the scene not related to the robot. However, this causes the humanoid
+    # to not go to it's initial pose... Need to figure out what's going on here.
+    # reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")

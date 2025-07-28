@@ -1,7 +1,6 @@
 from dataclasses import MISSING
 from typing import Any
 
-import isaaclab.sim as sim_utils
 from isaac_arena.geometry.pose import Pose
 from isaac_arena.scene.scene import SceneBase
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
@@ -34,7 +33,7 @@ class KitchenPickAndPlaceScene(SceneBase):
             # These positions are hardcoded for the kitchen scene. Its important to keep them.
             init_state=AssetBaseCfg.InitialStateCfg(pos=[0.772, 3.39, -0.895], rot=[0.70711, 0, 0, -0.70711]),
             spawn=UsdFileCfg(
-                usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/Collected_kitchen_scene/kitchen_scene_teleop_v3.usd"
+                usd_path="omniverse://isaac-dev.ov.nvidia.com/Projects/nvblox/isaac_arena/kitchen_scene_teleop_v3.usd"
             ),
         )
         # An object, which has to be placed on/into the target object
@@ -77,14 +76,9 @@ class MugInDrawerKitchenPickAndPlaceScene(KitchenPickAndPlaceScene):
                     activate_contact_sensors=True,
                 ),
             ),
-            destination_object=RigidObjectCfg(
-                prim_path="{ENV_REGEX_NS}/bottom_of_drawer_with_mugs",
-                spawn=sim_utils.CuboidCfg(
-                    size=[0.4, 0.65, 0.01],
-                    rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
-                    collision_props=sim_utils.CollisionPropertiesCfg(),
-                    activate_contact_sensors=True,
-                ),
-            ),
+            # NOTE(alexmillane, 2025-07-28): We used to have a dummy object placed on the bottom of the drawer to
+            # serve as a destination object. Now I just reference the cabinet. This hasn't yet been tested. So this
+            # will need some work to make this actually functional.
+            destination_object=RigidObjectCfg(prim_path="{ENV_REGEX_NS}/Kitchen/Cabinet_B_02"),
             robot=robot,
         )
