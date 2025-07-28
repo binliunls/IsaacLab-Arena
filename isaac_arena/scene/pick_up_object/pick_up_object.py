@@ -24,31 +24,31 @@ class PickUpObject(Asset):
         return self.pick_up_object_cfg
 
 
-class Mug(PickUpObject):
+class Banana(PickUpObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
 
     def __init__(self):
         super().__init__(
-            prim_path="{ENV_REGEX_NS}/target_mug",
-            usd_path="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props/Mugs/SM_Mug_A2.usd",
+            prim_path="{ENV_REGEX_NS}/target_banana",
+            usd_path="omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned/011_banana.usd",
             scale=(1.0, 1.0, 1.0),
-            name="mug",
+            name="banana",
         )
 
 
-class GelatinBox(PickUpObject):
+class CrackerBox(PickUpObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
 
     def __init__(self):
         super().__init__(
-            prim_path="{ENV_REGEX_NS}/target_gelatin_box",
-            usd_path="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned/009_gelatin_box.usd",
+            prim_path="{ENV_REGEX_NS}/target_cracker_box",
+            usd_path="omniverse://isaac-dev.ov.nvidia.com/NVIDIA/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
             scale=(1.0, 1.0, 1.0),
-            name="gelatin_box",
+            name="cracker_box",
         )
 
 

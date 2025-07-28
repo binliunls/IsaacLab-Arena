@@ -1,6 +1,7 @@
 from dataclasses import MISSING
 from typing import Any
 
+from isaac_arena.scene.asset import Asset
 from isaac_arena.scene.scene import SceneBase
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.utils import configclass
@@ -20,7 +21,7 @@ class PickAndPlaceSceneCfg:
 
 
 class PickAndPlaceScene(SceneBase):
-    def __init__(self, background_scene: Any, pick_up_object: Any):
+    def __init__(self, background_scene: Asset, pick_up_object: Asset):
         super().__init__()
         # The background scene
         self.background_scene = background_scene.get_background_cfg()
