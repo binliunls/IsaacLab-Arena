@@ -84,8 +84,6 @@ def get_environment_configuration_from_registry(
     background_name: str | None = None, object_name: str | None = None, embodiment_name: str | None = None
 ) -> dict[str, type["Asset"]]:
     from isaac_arena.assets.asset_registry import AssetRegistry
-    from isaac_arena.embodiments.franka import FrankaEmbodiment
-    from isaac_arena.embodiments.gr1t2 import GR1T2Embodiment
 
     asset_registry = AssetRegistry()
     if background_name:
@@ -96,22 +94,17 @@ def get_environment_configuration_from_registry(
         pick_up_object = asset_registry.get_asset_by_name(object_name)()
     else:
         pick_up_object = asset_registry.get_random_asset_by_tag("object")()
-
-    # Embodiment
-    embodiments = {
-        "gr1": GR1T2Embodiment,
-        "franka": FrankaEmbodiment,
-    }
     if embodiment_name:
-        embodiment = embodiments[embodiment_name]()
+        embodiment = asset_registry.get_asset_by_name(embodiment_name)()
     else:
-        embodiment = random.choice(list(embodiments.values()))()
+        embodiment = asset_registry.get_random_asset_by_tag("embodiment")()
 
     environment_configuration = {
         "background": background,
         "object": pick_up_object,
         "embodiment": embodiment,
     }
+
     return environment_configuration
 
 
@@ -120,3 +113,5 @@ def get_environment_configuration_from_registry(
 # so it needs to be fully defined to avoid a circular import.
 from isaac_arena.assets.background import *  # noqa: F403, F401
 from isaac_arena.assets.objects import *  # noqa: F403, F401
+from isaac_arena.embodiments.franka import *  # noqa: F403, F401
+from isaac_arena.embodiments.gr1t2 import *  # noqa: F403, F401
