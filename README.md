@@ -1,10 +1,5 @@
 # Isaac Arena
 
-<div align="center">
-
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Isaac Sim 4.5.0](https://img.shields.io/badge/Isaac%20Sim-4.5.0-green.svg)](https://developer.nvidia.com/isaac-sim)
-
 **A scalable environment creation and evaluation framework for robotics simulations built on top of NVIDIA Isaac Lab**
 
 </div>
@@ -19,8 +14,6 @@ Isaac Arena is a comprehensive robotics simulation framework that enhances NVIDI
 - 🏗️ **Modular Architecture**: Composable system with interchangeable backgrounds, objects, and tasks
 - 📦 **Asset Registry**: Centralized management system for simulation assets with tagging
 - 🎯 **Task Framework**: Composable task system. Currently we support only pick and place task.
-- 🐳 **Docker Support**: Containerized deployment for consistent environments
-- 🖥️ **CLI Interface**: Comprehensive command-line tools for environment configuration and execution
 - 📊 **Evaluation Framework**: _Coming up!!!
 - 🔧 **Isaac Lab Integration**: Seamless integration with NVIDIA's Isaac Lab ecosystem.
 
@@ -31,10 +24,10 @@ Isaac Arena follows a modular architecture with six core components:
 ### Core Components
 
 1. **Embodiments**: Robot configurations including Franka Panda and GR1T2 humanoid robot
-2. **Environment**: Environmental setups which does real time compilation of specified background, objects and task to create an environment.
-3. **Tasks**: Specific objectives like pick-and-place
-4. **Scene**: Specific parts defined for a task like pick-and-place
-5. **Asset Registry**: Centralized system for managing and selecting simulation assets. This contains manipulatable objects and the backgrounds.
+2. **Tasks**: Specific objectives like pick-and-place
+3. **Scene**: Specific parts defined for a task like pick-and-place
+4. **Asset Registry**: Centralized system for managing and selecting simulation assets. This contains manipulatable objects and the backgrounds.
+5. **Gym Environment Compilation**: Environmental setups which does real time compilation of specified background, objects and task to create an environment.
 6. **Metrics**: Coming up!!!
 
 The architecture enables flexible composition of environments by mixing and matching different:
@@ -63,7 +56,13 @@ The architecture enables flexible composition of environments by mixing and matc
    git submodule update --init --recursive
    ```
 
-### Docker Installation
+## 📖 Usage
+
+### Quick Start
+
+Start the docker to before running any commands.
+
+### Docker
 
 1. **Build and run the Docker container**:
    ```bash
@@ -71,10 +70,6 @@ The architecture enables flexible composition of environments by mixing and matc
    ```
 
 The Docker setup is based on NVIDIA Isaac Lab base image and includes all necessary dependencies.
-
-## 📖 Usage
-
-### Quick Start
 
 Run a simple pick-and-place simulation with zero actions:
 
@@ -88,17 +83,19 @@ python isaac_arena/examples/zero_action_runner.py \
 For using a scene with actions one can use the teleop interface from IsaacLab
 
 ```bash
-python isaac_arena/examples/zero_action_runner.py \
+python scripts/environments/teleoperation/teleop_se3_agent.py \
     --background kitchen_pick_and_place \
     --object tomato_soup_can \
     --embodiment franka \
+    --teleop_device franka \
+    --device cpu
 ```
 
 The following are example commands used for the mimic gen pipeline.
 
 For recording demos with the gr1 robot
 ```bash
-python scripts/tools/record_demos.py \
+python submodules/IsaacLab-Internal/scripts/tools/record_demos.py \
     --teleop_device dualhandtracking_abs \
     --embodiment gr1 \
     --background packing_table_pick_and_place \
@@ -114,7 +111,7 @@ python scripts/tools/record_demos.py \
 
 For replaying the recorded demos
 ```bash
-python scripts/tools/replay_demos.py \
+python submodules/IsaacLab-Internal/scripts/tools/replay_demos.py \
     --embodiment gr1 \
     --background packing_table_pick_and_place \
     --task PickPlace-GR1T2 \
@@ -127,7 +124,7 @@ python scripts/tools/replay_demos.py \
 
 For annotating them. We only support manual annotation for now.
 ```bash
-python scripts/imitation_learning/isaaclab_mimic/annotate_demos.py \
+python submodules/IsaacLab-Internal/scripts/imitation_learning/isaaclab_mimic/annotate_demos.py \
     --embodiment gr1 \
     --background packing_table_pick_and_place \
     --task PickPlace-GR1T2 \
@@ -141,7 +138,7 @@ python scripts/imitation_learning/isaaclab_mimic/annotate_demos.py \
 
 For generating a dataset
 ```bash
-python scripts/imitation_learning/isaaclab_mimic/generate_dataset.py \
+python submodules/IsaacLab-Internal/scripts/imitation_learning/isaaclab_mimic/generate_dataset.py \
     --embodiment gr1 \
     --background packing_table_pick_and_place \
     --task PickPlace-GR1T2 \
@@ -174,9 +171,7 @@ python your_script.py \
 #### Available CLI Arguments
 
 **Isaac Lab Arguments:**
-- `--disable_fabric`: Disable fabric and use USD I/O operations
 - `--num_envs`: Number of parallel environments (default: 1)
-- `--disable_pinocchio`: Disable Pinocchio physics engine (enabled by default)
 - `--mimic`: Enable mimic environment for imitation learning
 
 **Isaac Arena Arguments:**
@@ -243,17 +238,6 @@ class MyCustomObject(Asset):
 
 ## 🎯 Examples
 
-### Action Runner
-
-Test environment setup without policy execution:
-
-```python
-from isaac_arena.examples.zero_action_runner import main
-
-# Runs environment with policy actions for specified steps
-main()
-```
-
 ### Custom Policy Evaluation
 
 ```python
@@ -293,6 +277,8 @@ for step in range(1000):
 
 ### Adding Custom Embodiments
 
+All embodiments should contain observation, action and reset configuration defined.
+
 ```python
 from isaac_arena.embodiments.embodiment_base import EmbodimentBase
 
@@ -301,12 +287,14 @@ class MyRobotEmbodiment(EmbodimentBase):
         super().__init__()
         self.name = "my_robot"
         # Configure robot-specific settings
-        self.scene_config = MyRobotSceneConfig()
+        self.event_config = MyRobotEventConfig()
         self.action_config = MyRobotActionConfig()
         self.observation_config = MyRobotObservationConfig()
 ```
 
 ## 📊 Tasks and Evaluation
+
+Currently for our proof of concept we only support pick and place tasks. We are working on bringing in more tasks in the future.
 
 ### Pick and Place Task
 
@@ -317,6 +305,8 @@ The built-in pick-and-place task includes:
 - **Metrics**: Coming up!!!
 
 ### Custom Task Creation
+
+A task brings in the termination conditions along with mimic configurations.
 
 ```python
 from isaac_arena.tasks.task import TaskBase
@@ -342,42 +332,9 @@ Run the test suite to verify installation:
 ```bash
 # Run all tests
 pytest isaac_arena/tests/
-
-# Run specific test categories
-pytest isaac_arena/tests/test_asset_registry.py
-pytest isaac_arena/tests/test_zero_action_runner.py
 ```
-
-### Available Tests
-
-- **Asset Registry Tests**: Verify asset registration and retrieval
-- **Environment Tests**: Test environment creation and execution
-- **Simulation App Tests**: Validate Isaac Sim integration
-- **Object Termination Tests**: Test task completion detection
 
 ## 🛠️ Development
-
-### Project Structure
-
-```
-isaac_arena/
-├── isaac_arena/
-│   ├── assets/           # Asset management and registry
-│   ├── cli/              # Command-line interface
-│   ├── embodiments/      # Robot configurations
-│   ├── environments/     # Environment definitions
-│   ├── examples/         # Example scripts and notebooks
-│   ├── geometry/         # Geometric utilities
-│   ├── isaaclab_utils/   # Isaac Lab integration utilities
-│   ├── metrics/          # Evaluation metrics
-│   ├── scene/            # Scene configurations
-│   ├── tasks/            # Task definitions
-│   ├── tests/            # Test suite
-│   └── utils/            # General utilities
-├── docker/               # Docker configuration
-├── submodules/           # Git submodules (Isaac Lab)
-└── third_party/          # Third-party dependencies
-```
 
 ### Code Style
 
@@ -389,6 +346,11 @@ The project follows these conventions:
 - **Pyright** type checking
 - **Pre-commit hooks** for code quality
 
+one can run all the linters and pre commit checks by running
+```
+pre-commit run --all-files
+```
+
 ## 📄 License
 
 This project is proprietary software owned by NVIDIA Corporation. All rights reserved.
@@ -396,9 +358,17 @@ This project is proprietary software owned by NVIDIA Corporation. All rights res
 ```
 Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
-NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
-property and proprietary rights in and to this material, related
-documentation and any modifications thereto.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
 
 ---
