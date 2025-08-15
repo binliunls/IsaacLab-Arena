@@ -8,6 +8,7 @@
 # its affiliates is strictly prohibited.
 #
 
+import gymnasium as gym
 import torch
 import tqdm
 
@@ -47,9 +48,11 @@ def test_default_assets_registered():
 
 def _test_all_assets_in_registry(simulation_app):
     # Import the necessary classes.
+    from isaaclab_tasks.utils import parse_env_cfg
+
     from isaac_arena.assets.asset_registry import AssetRegistry
     from isaac_arena.embodiments.franka import FrankaEmbodiment
-    from isaac_arena.environments.compile_env import arena_to_gym_env_cfg, compile_manager_based_env_cfg, make_gym_env
+    from isaac_arena.environments.compile_env import ArenaEnvBuilder
     from isaac_arena.environments.isaac_arena_environment import IsaacArenaEnvironment
     from isaac_arena.scene.pick_and_place_scene import PickAndPlaceScene, RigidObjectCfg
     from isaac_arena.tasks.pick_and_place_task import PickAndPlaceTask
@@ -67,7 +70,11 @@ def _test_all_assets_in_registry(simulation_app):
     )
 
     # Compile the environment.
-    arena_env_cfg = compile_manager_based_env_cfg(isaac_arena_environment)
+    args_parser = get_isaac_arena_cli_parser()
+    args_cli = args_parser.parse_args([])
+
+    builder = ArenaEnvBuilder(isaac_arena_environment, args_cli)
+    base_cfg = builder.compose_manager_cfg()
 
     # Get the position of the pick-up object.
     object_position = asset.get_object_cfg().init_state.pos
@@ -97,20 +104,25 @@ def _test_all_assets_in_registry(simulation_app):
     additional_object_cfg = AdditionalObjectCfg()
 
     # Add the new objects to the scene.
-    new_scene_cfg = combine_configclass_instances("SceneCfg", arena_env_cfg.scene, additional_object_cfg)
-    arena_env_cfg.scene = new_scene_cfg
-    print(arena_env_cfg)
+    new_scene_cfg = combine_configclass_instances("SceneCfg", base_cfg.scene, additional_object_cfg)
+    base_cfg.scene = new_scene_cfg
+    print(base_cfg)
 
     # Run some zero actions.
-    args_parser = get_isaac_arena_cli_parser()
-    args_cli = args_parser.parse_args([])
-    env_cfg = arena_to_gym_env_cfg(
-        name=isaac_arena_environment.name,
-        entry_point="isaaclab.envs:ManagerBasedRLEnv",
-        arena_env_cfg=arena_env_cfg,
-        args_cli=args_cli,
+    entry_point = "isaaclab.envs:ManagerBasedRLEnv"
+    gym.register(
+        id=isaac_arena_environment.name,
+        entry_point=entry_point,
+        kwargs={"env_cfg_entry_point": base_cfg},
+        disable_env_checker=True,
     )
-    env = make_gym_env(name=isaac_arena_environment.name, env_cfg=env_cfg)
+    env_cfg = parse_env_cfg(
+        isaac_arena_environment.name,
+        device=args_cli.device,
+        num_envs=args_cli.num_envs,
+        use_fabric=not args_cli.disable_fabric,
+    )
+    env = gym.make(isaac_arena_environment.name, cfg=env_cfg)
     env.reset()
     for _ in tqdm.tqdm(range(NUM_STEPS)):
         with torch.inference_mode():

@@ -8,6 +8,8 @@
 # its affiliates is strictly prohibited.
 #
 
+from __future__ import annotations
+
 import argparse
 import gymnasium as gym
 
@@ -23,171 +25,103 @@ from isaac_arena.tasks.pick_and_place_task import PickAndPlaceTask
 from isaac_arena.utils.configclass import combine_configclass_instances
 
 
-def get_arena_env_cfg(args_cli: argparse.Namespace) -> ManagerBasedRLEnvCfg:
-    """Compile the arena environment configuration.
+class ArenaEnvBuilder:
+    """Compose Isaac Arena → IsaacLab configs"""
 
-    Args:
-        args_cli (argparse.Namespace): The command line arguments.
+    DEFAULT_SCENE_CFG = InteractiveSceneCfg(num_envs=4096, env_spacing=30.0, replicate_physics=False)
 
-    Returns:
-        ManagerBasedRLEnvCfg: The compiled arena environment configuration.
-    """
-    # Scene variation
-    environment_configuration = get_environment_configuration_from_registry(
-        args_cli.background, args_cli.object, args_cli.embodiment
-    )
+    def __init__(self, arena_env: IsaacArenaEnvironment, args: argparse.Namespace):
+        self.arena_env = arena_env
+        self.args = args
 
-    # Arena Environment
-    isaac_arena_environment = IsaacArenaEnvironment(
-        name=f"pick_and_place_{args_cli.embodiment}_{args_cli.background}_{args_cli.object}",
-        embodiment=environment_configuration["embodiment"],
-        scene=PickAndPlaceScene(
-            environment_configuration["background"],
-            environment_configuration["object"],
-        ),
-        task=PickAndPlaceTask(),
-    )
+    # ---------- factory ----------
 
-    # Compile an IsaacLab compatible arena environment configuration
-    env_cfg = compile_environment_config(isaac_arena_environment, args_cli)
-
-    return env_cfg, isaac_arena_environment.name
-
-
-def compile_environment_config(
-    isaac_arena_environment: IsaacArenaEnvironment, args_cli: argparse.Namespace
-) -> ManagerBasedRLEnvCfg:
-    """Compile the arena environment configuration to a gymnasium environment.
-
-    Args:
-        isaac_arena_environment (IsaacArenaEnvironment): The arena environment configuration.
-        args_cli (argparse.Namespace): The command line arguments.
-
-    Returns:
-        gym.Env: The compiled gymnasium environment.
-    """
-    # Get the manager-based environment configuration.
-    arena_env_cfg = compile_manager_based_env_cfg(isaac_arena_environment=isaac_arena_environment)
-    if args_cli.mimic:
-        # We compile the mimic env configuration now. This is a combination of the arena env cfg and the task mimic env cfg.
-        task_mimic_env_cfg = isaac_arena_environment.task.get_mimic_env_cfg(
-            embodiment_name=isaac_arena_environment.embodiment.name
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> ArenaEnvBuilder:
+        cfgs = get_environment_configuration_from_registry(args.background, args.object, args.embodiment)
+        arena_env = IsaacArenaEnvironment(
+            name=f"pick_and_place_{args.embodiment}_{args.background}_{args.object}",
+            embodiment=cfgs["embodiment"],
+            scene=PickAndPlaceScene(cfgs["background"], cfgs["object"]),
+            task=PickAndPlaceTask(),
         )
-        env_cfg = combine_configclass_instances(
-            "MimicEnvCfg",
-            arena_env_cfg,
-            task_mimic_env_cfg,
+        return cls(arena_env, args)
+
+    def compose_manager_cfg(self) -> IsaacArenaManagerBasedRLEnvCfg:
+        """Return base ManagerBased cfg (scene+events+terminations+xr), no registration."""
+        robot_pose = self.arena_env.scene.get_robot_initial_pose()
+        self.arena_env.embodiment.set_robot_initial_pose(robot_pose)
+
+        scene_cfg = combine_configclass_instances(
+            "SceneCfg",
+            self.DEFAULT_SCENE_CFG,
+            self.arena_env.scene.get_scene_cfg(),
+            self.arena_env.embodiment.get_scene_cfg(),
         )
-        # We also point to the mimic env entry point which is a inherited class of ManagerBasedRLEnv.
-        entry_point = isaac_arena_environment.embodiment.get_mimic_env()
-    else:
-        env_cfg = arena_env_cfg
-        entry_point = "isaaclab.envs:ManagerBasedRLEnv"
+        events_cfg = combine_configclass_instances(
+            "EventsCfg",
+            self.arena_env.embodiment.get_event_cfg(),
+            self.arena_env.scene.get_events_cfg(),
+        )
+        termination_cfg = combine_configclass_instances(
+            "TerminationCfg",
+            self.arena_env.task.get_termination_cfg(),
+            self.arena_env.scene.get_termination_cfg(),
+        )
+        return IsaacArenaManagerBasedRLEnvCfg(
+            observations=self.arena_env.embodiment.get_observation_cfg(),
+            actions=self.arena_env.embodiment.get_action_cfg(),
+            events=events_cfg,
+            scene=scene_cfg,
+            terminations=termination_cfg,
+            xr=self.arena_env.embodiment.get_xr_cfg(),
+        )
 
-    env_cfg = arena_to_gym_env_cfg(
-        name=isaac_arena_environment.name, entry_point=entry_point, arena_env_cfg=env_cfg, args_cli=args_cli
-    )
+    def compose_mimic_cfg(
+        self, base_cfg: IsaacArenaManagerBasedRLEnvCfg
+    ) -> tuple[IsaacArenaManagerBasedRLEnvCfg, str | type[ManagerBasedRLMimicEnv]]:
+        """Return (combined_mimic_cfg, entry_point) without registering."""
+        task_mimic_env_cfg = self.arena_env.task.get_mimic_env_cfg(embodiment_name=self.arena_env.embodiment.name)
+        combined = combine_configclass_instances("MimicEnvCfg", base_cfg, task_mimic_env_cfg)
+        entry_point = self.arena_env.embodiment.get_mimic_env()
+        return combined, entry_point
 
-    return env_cfg
+    def build_unregistered(self) -> tuple[str, ManagerBasedRLEnvCfg, str | type[ManagerBasedRLMimicEnv]]:
+        """
+        Compose final cfg and entry point WITHOUT registering or parsing.
+        """
+        base = self.compose_manager_cfg()
+        if self.args.mimic:
+            final, entry = self.compose_mimic_cfg(base)
+        else:
+            final, entry = base, "isaaclab.envs:ManagerBasedRLEnv"
+        return self.arena_env.name, final, entry
 
+    def build_registered(self) -> tuple[str, ManagerBasedRLEnvCfg]:
+        """Register Gym env and parse runtime cfg."""
+        name = self.arena_env.name
+        _, cfg_entry, entry_point = self.build_unregistered()
+        gym.register(
+            id=name,
+            entry_point=entry_point,
+            kwargs={"env_cfg_entry_point": cfg_entry},
+            disable_env_checker=True,
+        )
+        runtime_cfg = parse_env_cfg(
+            name,
+            device=self.args.device,
+            num_envs=self.args.num_envs,
+            use_fabric=not self.args.disable_fabric,
+        )
+        return name, runtime_cfg
 
-def compile_manager_based_env_cfg(isaac_arena_environment: IsaacArenaEnvironment) -> IsaacArenaManagerBasedRLEnvCfg:
-    """Get the manager-based environment configuration.
-
-    Args:
-        isaac_arena_environment (IsaacArenaEnvironment): The arena environment configuration.
-
-    Returns:
-        IsaacArenaManagerBasedRLEnvCfg: The manager-based environment configuration.
-    """
-
-    # Set the robot position
-    isaac_arena_environment.embodiment.set_robot_initial_pose(isaac_arena_environment.scene.get_robot_initial_pose())
-
-    # Scene composition - The scene is composed of:
-    # - Base IsaacLab config
-    # - Contributions from the (background) scene
-    # - Contributions from the embodiment
-    scene_cfg = combine_configclass_instances(
-        "SceneCfg",
-        InteractiveSceneCfg(
-            num_envs=4096,
-            env_spacing=30.0,
-            replicate_physics=False,
-        ),
-        isaac_arena_environment.scene.get_scene_cfg(),
-        isaac_arena_environment.embodiment.get_scene_cfg(),
-    )
-
-    events_cfg = combine_configclass_instances(
-        "EventsCfg",
-        isaac_arena_environment.embodiment.get_event_cfg(),
-        isaac_arena_environment.scene.get_events_cfg(),
-    )
-
-    termination_cfg = combine_configclass_instances(
-        "TerminationCfg",
-        isaac_arena_environment.task.get_termination_cfg(),
-        isaac_arena_environment.scene.get_termination_cfg(),
-    )
-
-    # Build the manager-based environment configuration.
-    arena_env_cfg = IsaacArenaManagerBasedRLEnvCfg(
-        observations=isaac_arena_environment.embodiment.get_observation_cfg(),
-        actions=isaac_arena_environment.embodiment.get_action_cfg(),
-        events=events_cfg,
-        scene=scene_cfg,
-        terminations=termination_cfg,
-        xr=isaac_arena_environment.embodiment.get_xr_cfg(),
-    )
-    return arena_env_cfg
+    @staticmethod
+    def make_env(name: str, env_cfg: ManagerBasedRLEnvCfg):
+        return gym.make(name, cfg=env_cfg)
 
 
-def arena_to_gym_env_cfg(
-    name: str,
-    entry_point: str | ManagerBasedRLMimicEnv,
-    arena_env_cfg: IsaacArenaManagerBasedRLEnvCfg,
-    args_cli: argparse.Namespace,
-) -> ManagerBasedRLEnvCfg:
-    """Compile the arena environment configuration to a gymnasium environment.
-
-    Args:
-        name (str): The name of the environment.
-        arena_env_cfg (IsaacArenaManagerBasedRLEnvCfg): The manager-based environment configuration.
-        args_cli (argparse.Namespace): The command line arguments.
-
-    Returns:
-        gym.Env: The compiled gymnasium environment.
-    """
-    gym.register(
-        id=name,
-        entry_point=entry_point,
-        kwargs={
-            "env_cfg_entry_point": arena_env_cfg,
-        },
-        disable_env_checker=True,
-    )
-    env_cfg = parse_env_cfg(
-        name,
-        device=args_cli.device,
-        num_envs=args_cli.num_envs,
-        use_fabric=not args_cli.disable_fabric,
-    )
-
-    return env_cfg
-
-
-def make_gym_env(name: str, env_cfg: ManagerBasedRLEnvCfg) -> gym.Env:
-    """Make the gymnasium environment.
-
-    Args:
-        name (str): The name of the environment.
-        env_cfg (ManagerBasedRLEnvCfg): The environment configuration.
-
-    Returns:
-        gym.Env: The gymnasium environment.
-    """
-
-    env = gym.make(name, cfg=env_cfg)
-
-    return env
+# Back-compat shim
+def get_arena_env_cfg(args_cli: argparse.Namespace) -> tuple[ManagerBasedRLEnvCfg, str]:
+    builder = ArenaEnvBuilder.from_args(args_cli)
+    name, cfg = builder.build_registered()
+    return cfg, name

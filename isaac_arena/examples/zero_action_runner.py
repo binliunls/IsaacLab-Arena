@@ -8,6 +8,7 @@
 # its affiliates is strictly prohibited.
 #
 
+import gymnasium as gym
 import torch
 import tqdm
 
@@ -32,11 +33,11 @@ def main():
     with SimulationAppContext(args_cli):
 
         # Imports have to follow simulation startup.
-        from isaac_arena.environments.compile_env import get_arena_env_cfg, make_gym_env
+        from isaac_arena.environments.compile_env import get_arena_env_cfg
 
         # Scene variation
         env_cfg, env_name = get_arena_env_cfg(args_cli)
-        env = make_gym_env(env_name, env_cfg)
+        env = gym.make(env_name, cfg=env_cfg)
         env.reset()
 
         # Run some zero actions.

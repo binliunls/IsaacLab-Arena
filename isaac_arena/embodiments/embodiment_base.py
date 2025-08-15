@@ -8,15 +8,18 @@
 # its affiliates is strictly prohibited.
 #
 
-from abc import ABC
 from typing import Any
 
 from isaaclab.envs import ManagerBasedRLMimicEnv
 
+from isaac_arena.assets.asset import Asset
 from isaac_arena.geometry.pose import Pose
 
 
-class EmbodimentBase(ABC):
+class EmbodimentBase(Asset):
+
+    name: str | None = None
+    tags: list[str] = ["embodiment"]
 
     def __init__(self):
         self.scene_config: Any | None = None
@@ -25,7 +28,6 @@ class EmbodimentBase(ABC):
         self.event_config: Any | None = None
         self.mimic_env: Any | None = None
         self.xr: Any | None = None
-        self.name: str = "embodiment_base"
 
     def get_scene_cfg(self) -> Any:
         return self.scene_config

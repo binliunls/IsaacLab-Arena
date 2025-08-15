@@ -8,6 +8,7 @@
 # its affiliates is strictly prohibited.
 #
 
+import gymnasium as gym
 import os
 import torch
 import tqdm
@@ -24,7 +25,7 @@ def _test_object_on_destination_termination(simulation_app) -> bool:
     from isaac_arena.assets.asset_registry import AssetRegistry
     from isaac_arena.cli.isaac_arena_cli import get_isaac_arena_cli_parser
     from isaac_arena.embodiments.franka import FrankaEmbodiment
-    from isaac_arena.environments.compile_env import compile_environment_config, make_gym_env
+    from isaac_arena.environments.compile_env import ArenaEnvBuilder
     from isaac_arena.environments.isaac_arena_environment import IsaacArenaEnvironment
     from isaac_arena.geometry.pose import Pose
     from isaac_arena.scene.pick_and_place_scene import PickAndPlaceScene
@@ -55,8 +56,9 @@ def _test_object_on_destination_termination(simulation_app) -> bool:
     isaac_arena_environment.scene.background_scene.object_pose = position_above_drawer
 
     # Compile an IsaacLab compatible arena environment configuration
-    env_cfg = compile_environment_config(isaac_arena_environment, args_cli)
-    env = make_gym_env(isaac_arena_environment.name, env_cfg)
+    builder = ArenaEnvBuilder(isaac_arena_environment, args_cli)
+    env_name, runtime_cfg = builder.build_registered()
+    env = gym.make(env_name, cfg=runtime_cfg)
     env.reset()
 
     # Run some zero actions.

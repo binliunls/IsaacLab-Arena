@@ -30,12 +30,18 @@ from isaaclab_assets.robots.franka import FRANKA_PANDA_HIGH_PD_CFG
 from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
 from isaaclab_tasks.manager_based.manipulation.stack.mdp.observations import ee_frame_pos, ee_frame_quat, gripper_pos
 
+from isaac_arena.assets.register_asset import registerasset
 from isaac_arena.embodiments.embodiment_base import EmbodimentBase
 from isaac_arena.geometry.pose import Pose
 from isaac_arena.scene.pick_and_place_scene import AssetBaseCfg
 
 
+@registerasset
 class FrankaEmbodiment(EmbodimentBase):
+    """Embodiment for the Franka robot."""
+
+    name = "franka"
+
     def __init__(self):
         super().__init__()
         self.scene_config = FrankaSceneCfg()
@@ -43,7 +49,6 @@ class FrankaEmbodiment(EmbodimentBase):
         self.observation_config = FrankaObservationsCfg()
         self.event_config = FrankaEventCfg()
         self.mimic_env = FrankaMimicEnv
-        self.name = "franka"
 
     def set_robot_initial_pose(self, pose: Pose):
         # We override the default initial pose setting function in order to also set
