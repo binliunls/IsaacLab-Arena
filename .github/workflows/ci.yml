@@ -33,13 +33,11 @@ jobs:
     steps:
       # Checkout Code
       - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-            fetch-depth: 0
-      
+        uses: actions/checkout@v3
+
       # Cache pre-commit
       - name: Cache pre-commit
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: .cache/pre-commit
           key: precommit-${{ github.sha }}
