@@ -28,7 +28,7 @@ jobs:
       image: nvcr.io/nvstaging/isaac-amr/isaac_arena:latest
       credentials:
         username: $oauthtoken
-        password: ${{ secrets.NGC_API_KEY }}
+        password: ${{ env.NGC_API_KEY }}
 
     steps:
       # Checkout Code
