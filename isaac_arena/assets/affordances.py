@@ -27,7 +27,7 @@ def unnormalize_value(value: float, min_value: float, max_value: float):
 
 
 def get_normalized_joint_position(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg):
-    articulation = env.unwrapped.scene.articulations[asset_cfg.name]
+    articulation = env.scene.articulations[asset_cfg.name]
     assert len(asset_cfg.joint_names) == 1, "Only one joint name is supported for now."
     joint_index = articulation.data.joint_names.index(asset_cfg.joint_names[0])
     joint_position = articulation.data.joint_pos[:, joint_index]
@@ -40,7 +40,7 @@ def get_normalized_joint_position(env: ManagerBasedEnv, asset_cfg: SceneEntityCf
 
 
 def set_normalized_joint_position(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg, target_joint_position: float):
-    articulation = env.unwrapped.scene.articulations[asset_cfg.name]
+    articulation = env.scene.articulations[asset_cfg.name]
     assert len(asset_cfg.joint_names) == 1, "Only one joint name is supported for now."
     joint_index = articulation.data.joint_names.index(asset_cfg.joint_names[0])
     joint_position_limits = articulation.data.joint_pos_limits[0, joint_index, :]
