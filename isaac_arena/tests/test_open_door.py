@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gymnasium as gym
 import torch
 import tqdm
 from collections.abc import Callable
@@ -59,14 +58,13 @@ def _test_open_door_microwave(simulation_app) -> bool:
     )
 
     env_builder = ArenaEnvBuilder(isaac_arena_environment, args_cli)
-    name, cfg = env_builder.build_registered()
-    env = gym.make(name, cfg=cfg)
+    env = env_builder.make_registered()
     env.reset()
 
     def step_zeros_and_call(env: ManagerBasedEnv, function: Callable[[ManagerBasedEnv], None], num_steps: int):
         for _ in tqdm.tqdm(range(NUM_STEPS)):
             with torch.inference_mode():
-                actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
+                actions = torch.zeros(env.action_space.shape, device=env.device)
                 env.step(actions)
                 function(env)
 

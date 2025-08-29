@@ -40,7 +40,7 @@ def get_normalized_joint_position(env: ManagerBasedEnv, object_name: str, joint_
 def set_normalized_joint_position(
     env: ManagerBasedEnv, object_name: str, joint_name: str, target_joint_position: float
 ):
-    articulation = env.unwrapped.scene.articulations[object_name]
+    articulation = env.scene.articulations[object_name]
     joint_index = articulation.data.joint_names.index(joint_name)
     joint_position_limits = articulation.data.joint_pos_limits[0, joint_index, :]
     joint_min, joint_max = joint_position_limits[0], joint_position_limits[1]
