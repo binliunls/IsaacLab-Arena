@@ -25,6 +25,7 @@ HEADLESS = True
 def _test_open_door_microwave(simulation_app) -> bool:
 
     from isaaclab.envs.manager_based_env import ManagerBasedEnv
+    from isaaclab.managers import SceneEntityCfg
 
     from isaac_arena.assets.asset_registry import AssetRegistry
     from isaac_arena.cli.isaac_arena_cli import get_isaac_arena_cli_parser
@@ -54,42 +55,61 @@ def _test_open_door_microwave(simulation_app) -> bool:
         name="open_door",
         embodiment=FrankaEmbodiment(),
         scene=OpenDoorScene(background, microwave),
-        task=OpenDoorTask(),
+        task=OpenDoorTask(microwave),
     )
 
     env_builder = ArenaEnvBuilder(isaac_arena_environment, args_cli)
     env = env_builder.make_registered()
     env.reset()
 
-    def step_zeros_and_call(env: ManagerBasedEnv, function: Callable[[ManagerBasedEnv], None], num_steps: int):
+    def step_zeros_and_call(
+        env: ManagerBasedEnv, function: Callable[[ManagerBasedEnv, torch.Tensor], None], num_steps: int
+    ):
         for _ in tqdm.tqdm(range(NUM_STEPS)):
             with torch.inference_mode():
                 actions = torch.zeros(env.action_space.shape, device=env.device)
-                env.step(actions)
-                function(env)
+                _, _, terminated, _, _ = env.step(actions)
+                function(env, terminated)
 
-    def assert_closed(env: ManagerBasedEnv):
-        is_open = microwave.is_open(env, "interactable_object")
+    def assert_closed(env: ManagerBasedEnv, terminated: torch.Tensor):
+        is_open = microwave.is_open(env, SceneEntityCfg("interactable_object"))
         assert is_open.shape == torch.Size([1])
         assert not is_open.item()
         if not is_open.item():
             print("Microwave is closed")
+        # Check not terminated.
+        assert terminated.shape == torch.Size([1])
+        assert not terminated.item()
+        if not terminated.item():
+            print("Open door task is not completed")
 
-    def assert_open(env: ManagerBasedEnv):
-        is_open = microwave.is_open(env, "interactable_object")
+    def assert_open(env: ManagerBasedEnv, terminated: torch.Tensor):
+        is_open = microwave.is_open(env, SceneEntityCfg("interactable_object"))
         assert is_open.shape == torch.Size([1])
         assert is_open.item()
         if is_open.item():
             print("Microwave is open")
+        # Check terminated.
+        assert terminated.shape == torch.Size([1])
+        assert terminated.item()
+        if terminated.item():
+            print("Open door task is completed")
 
-    print("Closing microwave")
-    microwave.close(env, "interactable_object")
-    step_zeros_and_call(env, assert_closed, NUM_STEPS)
-    print("Opening microwave")
-    microwave.open(env, "interactable_object")
-    step_zeros_and_call(env, assert_open, NUM_STEPS)
+    try:
 
-    env.close()
+        print("Closing microwave")
+        microwave.close(env, SceneEntityCfg("interactable_object"))
+        step_zeros_and_call(env, assert_closed, NUM_STEPS)
+        print("Opening microwave")
+        microwave.open(env, SceneEntityCfg("interactable_object"))
+        step_zeros_and_call(env, assert_open, NUM_STEPS)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        env.close()
 
     return True
 
