@@ -19,8 +19,33 @@ from isaac_arena.assets.register import register_asset
 from isaac_arena.geometry.pose import Pose
 
 
+class LibraryObject(Object):
+    """
+    Base class for objects in the library which are defined in this file.
+    These objects have class attributes (rather than instance attributes).
+    """
+
+    name: str
+    tags: list[str]
+    usd_path: str
+    object_type: ObjectType = ObjectType.RIGID
+    scale: tuple[float, float, float] = (1.0, 1.0, 1.0)
+
+    def __init__(self, prim_path: str, initial_pose: Pose | None = None, **kwargs):
+        super().__init__(
+            name=self.name,
+            prim_path=prim_path,
+            tags=self.tags,
+            usd_path=self.usd_path,
+            object_type=self.object_type,
+            scale=self.scale,
+            initial_pose=initial_pose,
+            **kwargs,
+        )
+
+
 @register_asset
-class CrackerBox(Object):
+class CrackerBox(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -35,7 +60,7 @@ class CrackerBox(Object):
 
 
 @register_asset
-class MustardBottle(Object):
+class MustardBottle(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -50,7 +75,7 @@ class MustardBottle(Object):
 
 
 @register_asset
-class SugarBox(Object):
+class SugarBox(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -65,7 +90,7 @@ class SugarBox(Object):
 
 
 @register_asset
-class TomatoSoupCan(Object):
+class TomatoSoupCan(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -80,7 +105,7 @@ class TomatoSoupCan(Object):
 
 
 @register_asset
-class LightWheelKettle21(Object):
+class LightWheelKettle21(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -95,7 +120,7 @@ class LightWheelKettle21(Object):
 
 
 @register_asset
-class LightWheelPot51(Object):
+class LightWheelPot51(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -110,7 +135,7 @@ class LightWheelPot51(Object):
 
 
 @register_asset
-class SketchFabSprayCan3(Object):
+class SketchFabSprayCan3(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -126,7 +151,7 @@ class SketchFabSprayCan3(Object):
 
 
 @register_asset
-class PowerDrill(Object):
+class PowerDrill(LibraryObject):
     """
     Encapsulates the pick-up object config for a pick-and-place environment.
     """
@@ -141,7 +166,7 @@ class PowerDrill(Object):
 
 
 @register_asset
-class Microwave(Object, Openable):
+class Microwave(LibraryObject, Openable):
     """A microwave oven."""
 
     name = "microwave"
