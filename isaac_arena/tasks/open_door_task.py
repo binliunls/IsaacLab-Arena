@@ -20,7 +20,9 @@ from isaaclab.managers import EventTermCfg, SceneEntityCfg, TerminationTermCfg
 from isaaclab.utils import configclass
 
 from isaac_arena.affordances.openable import Openable
-from isaac_arena.tasks.task import TaskBase
+from isaac_arena.metrics.metric_base import MetricBase
+from isaac_arena.metrics.success_rate import SuccessRateMetric
+from isaac_arena.tasks.task_base import TaskBase
 from isaac_arena.terms.events import set_object_pose
 
 
@@ -64,6 +66,10 @@ class OpenDoorTask(TaskBase):
             embodiment_name=embodiment_name,
             openable_object_name=self.openable_object.name,
         )
+
+    def get_metrics(self) -> list[MetricBase]:
+        # TODO(alexmillane, 2025.09.25): Add door moved metric.
+        return [SuccessRateMetric()]
 
 
 @configclass
