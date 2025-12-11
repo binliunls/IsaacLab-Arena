@@ -42,7 +42,8 @@ RUN ln -s /isaac-sim/ ${WORKDIR}/submodules/IsaacLab/_isaac_sim
 # Install IsaacLab dependencies
 RUN for DIR in ${WORKDIR}/submodules/IsaacLab/source/isaaclab*/; do pip install --no-deps -e "$DIR" --break-system-packages; done
 # Logs and other stuff appear under dist-packages per default, so this dir has to be writeable.
-RUN chmod 777 -R /isaac-sim/kit/
+# Make entire /isaac-sim directory accessible for non-root users running python commands.
+RUN chmod 777 -R /isaac-sim/
 # Install isaaclab
 RUN ${ISAACLAB_PATH}/isaaclab.sh -i
 
